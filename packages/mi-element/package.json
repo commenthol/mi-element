@@ -1,7 +1,7 @@
 {
   "name": "mi-element",
-  "version": "0.0.2",
-  "description": "Build micro web-components",
+  "version": "0.1.0",
+  "description": "Build lightweight reactive micro web-components",
   "keywords": [],
   "homepage": "https://github.com/commenthol/mi-element/tree/main/packages/mi-element#readme",
   "bugs": {
