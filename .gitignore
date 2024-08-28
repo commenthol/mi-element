@@ -1,5 +1,7 @@
-node_modules
-tmp
+node_modules/
+coverage/
+tmp/
+
 .DS_Store
 *.tgz
 *.log

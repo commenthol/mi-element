@@ -1,16 +1,96 @@
 {
   "name": "mi-element",
-  "version": "0.0.1",
-  "description": "",
+  "version": "0.0.2",
+  "description": "Build micro web-components",
   "keywords": [],
+  "homepage": "https://github.com/commenthol/mi-element/tree/main/packages/mi-element#readme",
+  "bugs": {
+    "url": "https://github.com/commenthol/mi-element/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/commenthol/mi-element.git",
+    "directory": "packages/mi-element"
+  },
   "license": "MIT",
   "author": "commenthol <commenthol@gmail.com>",
+  "maintainers": [
+    "commenthol <commenthol@gmail.com>"
+  ],
   "type": "module",
+  "exports": {
+    ".": {
+      "default": "./dist/index.js",
+      "development": "./src/index.js",
+      "types": "./types/index.d.ts"
+    },
+    "./element": {
+      "default": "./dist/element.js",
+      "development": "./src/element.js",
+      "types": "./types/element.d.ts"
+    },
+    "./context": {
+      "default": "./dist/context.js",
+      "development": "./src/context.js",
+      "types": "./types/context.d.ts"
+    },
+    "./escape": {
+      "default": "./dist/escape.js",
+      "development": "./src/escape.js",
+      "types": "./types/escape.d.ts"
+    },
+    "./refs": {
+      "default": "./dist/refs.js",
+      "development": "./src/refs.js",
+      "types": "./types/refs.d.ts"
+    },
+    "./signal": {
+      "default": "./dist/signal.js",
+      "development": "./src/signal.js",
+      "types": "./types/signal.d.ts"
+    },
+    "./store": {
+      "default": "./dist/store.js",
+      "development": "./src/store.js",
+      "types": "./types/store.d.ts"
+    },
+    "./package.json": {
+      "default": "./package.json"
+    }
+  },
   "main": "src/index.js",
   "files": [
-    "src"
+    "src",
+    "dist",
+    "types"
   ],
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "all": "npm-run-all lint test build",
+    "build": "rimraf dist && rollup -c && gzip dist/index.min.js && ls -al dist && rimraf dist/index.min.*",
+    "example": "vite --open /example/",
+    "lint": "eslint",
+    "pretty": "prettier -w **/*.js",
+    "test": "vitest run --coverage",
+    "test:browser": "vitest --coverage",
+    "dev": "npm run test:browser",
+    "types": "tsc"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.9.1",
+    "@rollup/plugin-terser": "^0.4.4",
+    "@testing-library/dom": "^10.4.0",
+    "@types/node": "^22.5.0",
+    "@vitest/browser": "^2.0.5",
+    "@vitest/coverage-istanbul": "^2.0.5",
+    "eslint": "^9.9.1",
+    "globals": "^15.9.0",
+    "npm-run-all2": "^6.2.2",
+    "playwright": "^1.46.1",
+    "prettier": "^3.3.3",
+    "rimraf": "^6.0.1",
+    "rollup": "^4.21.1",
+    "typescript": "^5.5.4",
+    "vite": "^5.4.2",
+    "vitest": "^2.0.5"
   }
 }

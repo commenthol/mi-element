@@ -1,13 +1,21 @@
 {
-  "private": true,
   "name": "mi-element-workspace",
   "version": "0.0.1",
-  "description": "",
-  "keywords": [],
+  "private": true,
+  "description": "Monorepo for mi-element",
+  "homepage": "https://github.com/commenthol/mi-element#readme",
+  "bugs": {
+    "url": "https://github.com/commenthol/mi-element/issues"
+  },
   "license": "MIT",
   "author": "commenthol <commenthol@gmail.com>",
   "type": "module",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "lint": "pnpm -r run lint",
+    "f": "pnpm --filter \"./packages/*\" -r",
+    "test": "pnpm -r run test"
+  },
+  "engines": {
+    "node": ">=20.0.0"
   }
 }
