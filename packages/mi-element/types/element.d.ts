@@ -119,9 +119,9 @@ export class MiElement extends HTMLElement {
     once(eventName: string, listener: EventListenerOrEventListenerObject, node?: Node | Document | Window): void;
     /**
      * Unsubscribe a listener function for disposal on disconnectedCallback()
-     * @param {function} listener
+     * @param {...function} listeners
      */
-    dispose(listener: Function): void;
+    dispose(...listeners: Function[]): void;
     /**
      * adds a connected controller
      * @param {HostController} controller

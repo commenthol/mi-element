@@ -271,13 +271,15 @@ export class MiElement extends HTMLElement {
 
   /**
    * Unsubscribe a listener function for disposal on disconnectedCallback()
-   * @param {function} listener
+   * @param {...function} listeners
    */
-  dispose(listener) {
-    if (typeof listener !== 'function') {
-      throw new TypeError('listener must be a function')
+  dispose(...listeners) {
+    for (const listener of listeners) {
+      if (typeof listener !== 'function') {
+        throw new TypeError('listener must be a function')
+      }
+      this.#disposers.add(listener)
     }
-    this.#disposers.add(listener)
   }
 
   /**

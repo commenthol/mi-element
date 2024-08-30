@@ -80,9 +80,11 @@ class MiElement extends HTMLElement {
       once: !0
     });
   }
-  dispose(listener) {
-    if ('function' != typeof listener) throw new TypeError('listener must be a function');
-    this.#disposers.add(listener);
+  dispose(...listeners) {
+    for (const listener of listeners) {
+      if ('function' != typeof listener) throw new TypeError('listener must be a function');
+      this.#disposers.add(listener);
+    }
   }
   addController(controller) {
     this.#controllers.add(controller), this.isConnected && controller.hostConnected?.();
