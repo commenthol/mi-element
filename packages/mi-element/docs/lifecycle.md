@@ -199,7 +199,7 @@ Within the `render()` method, bear in mind to:
 Using [`innerHTML`][innerHTML] to create the components DOM is susceptible to
 [XSS][XSS] attacks in case that user-supplied data contains valid HTML markup.
 
-In all other cases you may consider <code>esc``</code>, `escHtml()`or`escAttr()`
+In all other cases you may consider <code>esc``</code>, `escHtml()` or `escAttr()`
 from the "mi-element" import, which escapes user-supplied data.
 
 [innerHTML]: https://developer.mozilla.org/en-US/docs/Web/API/Element/innerHTML

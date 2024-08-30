@@ -1,5 +1,6 @@
 /**
- * Helper function to find `id` attributes in `container`s node tree
+ * Helper function to find `id` attributes in `container`s node tree.
+ * id names are camelCased, e.g. 'list-container' becomes 'listContainer'
  * @param {Element} container root element
  * @returns {Record<string, Node>|{}} record of found references
  * @example
@@ -7,7 +8,7 @@
  * references = refs(el)
  * //> references = { p: <p>, named: <span> }
  */
-export function refsById(container: Element): Record<string, Node> | {}
+export function refsById(container: Element): Record<string, Node> | {};
 /**
  * Helper function to gather references by a map of selectors
  * @param {Element} container root element
@@ -18,7 +19,4 @@ export function refsById(container: Element): Record<string, Node> | {}
  * references = refs(el, { p: 'p', named: 'p > span' })
  * //> references = { p: <p>, named: <span> }
  */
-export function refsBySelector(
-  container: Element,
-  selectors: Record<string, string>
-): Record<string, Node> | {}
+export function refsBySelector(container: Element, selectors: Record<string, string>): Record<string, Node> | {};

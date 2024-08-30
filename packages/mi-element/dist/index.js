@@ -9,3 +9,5 @@ export { refsById, refsBySelector } from './refs.js';
 export { Signal, createSignal, isSignalLike } from './signal.js';
 
 export { Store, subscribeToStore } from './store.js';
+
+export { classMap, styleMap } from './styling.js';

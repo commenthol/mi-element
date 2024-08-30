@@ -20,3 +20,4 @@ export { Signal, createSignal, isSignalLike } from './signal.js'
  * @typedef {import('./store.js').Action} Action
  */
 export { Store, subscribeToStore } from './store.js'
+export { classMap, styleMap } from './styling.js'

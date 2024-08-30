@@ -1,3 +1,5 @@
+import { kebabToCamelCase } from './case.js'
+
 /**
  * Helper function to find `id` attributes in `container`s node tree.
  * id names are camelCased, e.g. 'list-container' becomes 'listContainer'
@@ -19,14 +21,6 @@ export function refsById(container) {
   }
   return found
 }
-
-/**
- * convert kebab-case to lowerCamelCase
- * @param {string} str
- * @returns {string}
- */
-export const kebabToCamelCase = (str = '') =>
-  str.toLowerCase().replace(/[-_]\w/g, (m) => m[1].toUpperCase())
 
 /**
  * Helper function to gather references by a map of selectors

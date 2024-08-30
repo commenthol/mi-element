@@ -62,7 +62,7 @@ export class ContextProvider {
 
   /**
    * @private
-   * @param {ContextRequestEvent} ev 
+   * @param {ContextRequestEvent} ev
    */
   onContextRequest = (ev) => {
     if (ev.context !== this.context) {

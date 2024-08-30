@@ -198,7 +198,7 @@ export class MiElement extends HTMLElement {
 
   /**
    * adds a template to renderRoot
-   * @param {HTMLTemplateElement}
+   * @param {HTMLTemplateElement} template
    */
   addTemplate(template) {
     if (!(template instanceof HTMLTemplateElement)) {

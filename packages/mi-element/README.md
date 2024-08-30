@@ -2,6 +2,8 @@
 
 > a lightweight alternative to write web components
 
+Only weights 2.3kB minified and gzipped.
+
 mi-element provides further features to build web applications through 
 [Web Components][] like:
 
@@ -77,6 +79,7 @@ In `./example` you'll find a working sample of a Todo App. Check it out with
 - [controller][docs-controller] adding controllers to mi-element to hook into the lifecycle
 - [context][docs-context] Implementation of the [Context Protocol][].
 - [store][docs-store] Manage shared state in an application
+- [styling][docs-styling] Styling directives for "class" and "style"
 
 # License
 
@@ -88,3 +91,4 @@ MIT licensed
 [docs-controller]: https://github.com/commenthol/mi-element/tree/main/packages/mi-element/docs/controller.md
 [docs-context]: https://github.com/commenthol/mi-element/tree/main/packages/mi-element/docs/context.md
 [docs-store]: https://github.com/commenthol/mi-element/tree/main/packages/mi-element/docs/store.md
+[docs-styling]: https://github.com/commenthol/mi-element/tree/main/packages/mi-element/docs/styling.md

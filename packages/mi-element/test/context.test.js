@@ -71,8 +71,8 @@ describe('context', () => {
   define('mi-test-context-consumer', MiTestContextConsumer)
 
   const getCounters = (el) =>
-    Array.from(el.querySelectorAll('mi-test-context-consumer')).map(
-      (n) => n.textContent.trim()
+    Array.from(el.querySelectorAll('mi-test-context-consumer')).map((n) =>
+      n.textContent.trim()
     )
 
   const clickEvent = () =>

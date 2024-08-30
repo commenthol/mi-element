@@ -29,6 +29,11 @@
       "development": "./src/element.js",
       "types": "./types/element.d.ts"
     },
+    "./case": {
+      "default": "./dist/case.js",
+      "development": "./src/case.js",
+      "types": "./types/case.d.ts"
+    },
     "./context": {
       "default": "./dist/context.js",
       "development": "./src/context.js",
@@ -54,6 +59,11 @@
       "development": "./src/store.js",
       "types": "./types/store.d.ts"
     },
+    "./styling": {
+      "default": "./dist/styling.js",
+      "development": "./src/styling.js",
+      "types": "./types/styling.d.ts"
+    },
     "./package.json": {
       "default": "./package.json"
     }
@@ -65,8 +75,8 @@
     "types"
   ],
   "scripts": {
-    "all": "npm-run-all lint test build",
-    "build": "rimraf dist && rollup -c && gzip dist/index.min.js && ls -al dist && rimraf dist/index.min.*",
+    "all": "npm-run-all pretty lint test build types",
+    "build": "rimraf dist && rollup -c && gzip -k dist/index.min.js && ls -al dist && rimraf dist/index.min.*",
     "example": "vite --open /example/",
     "lint": "eslint",
     "pretty": "prettier -w **/*.js",

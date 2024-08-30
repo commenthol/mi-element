@@ -1,10 +1,10 @@
+import { kebabToCamelCase } from './case.js';
+
 function refsById(container) {
   const nodes = container.querySelectorAll?.('[id]') || [], found = {};
   for (const node of nodes) found[kebabToCamelCase(node.getAttribute('id') || node.nodeName.toLowerCase())] = node;
   return found;
 }
-
-const kebabToCamelCase = (str = "") => str.toLowerCase().replace(/[-_]\w/g, (m => m[1].toUpperCase()));
 
 function refsBySelector(container, selectors) {
   const found = {};
@@ -12,4 +12,4 @@ function refsBySelector(container, selectors) {
   return found;
 }
 
-export { kebabToCamelCase, refsById, refsBySelector };
+export { refsById, refsBySelector };
