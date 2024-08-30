@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { Store, subscribeToStore } from '../src/index.js'
+import { Store, subscribeToStore, createSignal } from '../src/index.js'
 
 describe('store', () => {
   const actions = {
@@ -105,6 +105,26 @@ describe('store', () => {
       store.increment(3)
       // element won't get notified as being disconnected
       expect(element.store).toBe(6)
+      expect(element.events.length).toEqual(3)
+    })
+
+    it('element shall subscribe to store with signal', async () => {
+      const store = new Store(actions, 0)
+      const element = new MockPiElement()
+      const signal = createSignal(0)
+      signal.subscribe((value) => {
+        element.events.push('value', value)
+      })
+      subscribeToStore(element, store, signal)
+      store.increment(3)
+      expect(signal.value).toBe(3)
+      // requestUpdate will not be called
+      expect(element.events).toEqual(['dispose', 'value', 3])
+      // signal gets disconnected
+      element.disconnectedCallback()
+      store.increment(3)
+      // signal won't get notified as being disconnected
+      expect(signal.value).toBe(3)
     })
 
     it('element shall fail if property does not exist', () => {
