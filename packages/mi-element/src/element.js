@@ -1,3 +1,9 @@
+import { createSignal } from './signal.js'
+
+/**
+ * @typedef {import('./signal.js').Signal} Signal
+ */
+
 /**
  * @typedef {object} HostController controller
  * @property {() => void} hostConnected is called when host element is added to
@@ -46,6 +52,8 @@ export class MiElement extends HTMLElement {
   #disposers = new Set()
   #controllers = new Set()
   #changedAttr = {}
+  // signals allow for finer control of updates
+  #signals = {}
 
   /**
    * Default options used when calling `attachShadow`. Used in
@@ -62,11 +70,19 @@ export class MiElement extends HTMLElement {
   }
 
   /**
+   * @returns {Record<string, Signal>|{}}
+   */
+  get signals() {
+    return this.#signals
+  }
+
+  /**
    * requests update on component when property changes
    */
   #observedAttributes() {
-    for (const [name, val] of Object.entries(this.#attr)) {
-      this.#types.set(name, initialType(val))
+    for (const [name, value] of Object.entries(this.#attr)) {
+      this.#signals[name] = createSignal(value)
+      this.#types.set(name, initialType(value))
       this.#attrLc.set(name.toLowerCase(), name)
       Object.defineProperty(this, name, {
         enumerable: true,
@@ -77,8 +93,10 @@ export class MiElement extends HTMLElement {
           console.debug('%s.%s =', this.nodeName, name, newValue)
           const oldValue = this.#attr[name]
           if (oldValue === newValue) return
-          this.#attr[name] = newValue
-          this.#changedAttr[name] = newValue
+          this.#attr[name] =
+            this.#signals[name].value =
+            this.#changedAttr[name] =
+              newValue
           this.requestUpdate()
         }
       })
@@ -136,7 +154,7 @@ export class MiElement extends HTMLElement {
     const attr = this.#getName(name)
     const type = this.#getType(attr)
     const _newValue = convertType(newValue, type)
-    this.#attr[attr] = this.#changedAttr[attr] = _newValue
+    this[attr] = this.#changedAttr[attr] = _newValue
     // correct initial setting of `trueish="false"` otherwise there's no chance
     // to overwrite a trueish value. The case `falsish="true"` is covered.
     if (type === 'Boolean' && newValue === 'false') {
@@ -165,7 +183,7 @@ export class MiElement extends HTMLElement {
       return
     }
     const type = this.#getType(attr)
-    this.#attr[attr] = this.#changedAttr[attr] = newValue
+    this[attr] = this.#changedAttr[attr] = newValue
     console.debug('%s.setAttribute("%s",', this.nodeName, name, newValue)
 
     // only set string values in these cases

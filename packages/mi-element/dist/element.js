@@ -1,3 +1,5 @@
+import { createSignal } from './signal.js';
+
 class MiElement extends HTMLElement {
   #attr={};
   #attrLc=new Map;
@@ -5,6 +7,7 @@ class MiElement extends HTMLElement {
   #disposers=new Set;
   #controllers=new Set;
   #changedAttr={};
+  #signals={};
   static shadowRootOptions={
     mode: 'open'
   };
@@ -13,15 +16,19 @@ class MiElement extends HTMLElement {
       ...this.constructor.attributes
     }, this.#observedAttributes();
   }
+  get signals() {
+    return this.#signals;
+  }
   #observedAttributes() {
-    for (const [name, val] of Object.entries(this.#attr)) this.#types.set(name, initialType(val)), 
-    this.#attrLc.set(name.toLowerCase(), name), Object.defineProperty(this, name, {
+    for (const [name, value] of Object.entries(this.#attr)) this.#signals[name] = createSignal(value), 
+    this.#types.set(name, initialType(value)), this.#attrLc.set(name.toLowerCase(), name), 
+    Object.defineProperty(this, name, {
       enumerable: !0,
       get() {
         return this.#attr[name];
       },
       set(newValue) {
-        this.#attr[name] !== newValue && (this.#attr[name] = newValue, this.#changedAttr[name] = newValue, 
+        this.#attr[name] !== newValue && (this.#attr[name] = this.#signals[name].value = this.#changedAttr[name] = newValue, 
         this.requestUpdate());
       }
     });
@@ -43,14 +50,14 @@ class MiElement extends HTMLElement {
   }
   attributeChangedCallback(name, _oldValue, newValue) {
     const attr = this.#getName(name), type = this.#getType(attr), _newValue = convertType(newValue, type);
-    this.#attr[attr] = this.#changedAttr[attr] = _newValue, 'Boolean' === type && 'false' === newValue && this.removeAttribute(name), 
+    this[attr] = this.#changedAttr[attr] = _newValue, 'Boolean' === type && 'false' === newValue && this.removeAttribute(name), 
     this.requestUpdate();
   }
   setAttribute(name, newValue) {
     const attr = this.#getName(name);
     if (!(attr in this.#attr)) return;
     const type = this.#getType(attr);
-    this.#attr[attr] = this.#changedAttr[attr] = newValue, 'Boolean' === type ? !0 === newValue || '' === newValue ? super.setAttribute(name, '') : super.removeAttribute(name) : [ 'String', 'Number' ].includes(type) || !0 === newValue ? super.setAttribute(name, newValue) : this.requestUpdate();
+    this[attr] = this.#changedAttr[attr] = newValue, 'Boolean' === type ? !0 === newValue || '' === newValue ? super.setAttribute(name, '') : super.removeAttribute(name) : [ 'String', 'Number' ].includes(type) || !0 === newValue ? super.setAttribute(name, newValue) : this.requestUpdate();
   }
   requestUpdate() {
     this.isConnected && requestAnimationFrame((() => {
