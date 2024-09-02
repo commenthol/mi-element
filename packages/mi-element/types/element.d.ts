@@ -1,7 +1,4 @@
 /**
- * @typedef {import('./signal.js').Signal} Signal
- */
-/**
  * @typedef {object} HostController controller
  * @property {() => void} hostConnected is called when host element is added to
  * the DOM, usually with connectedCallback()
@@ -51,10 +48,6 @@ export class MiElement extends HTMLElement {
         mode: string;
     };
     /**
-     * @returns {Record<string, Signal>|{}}
-     */
-    get signals(): {} | Record<string, import("./signal.js").Signal>;
-    /**
      * creates the element's renderRoot, sets up styling
      * @category lifecycle
      */
@@ -66,10 +59,10 @@ export class MiElement extends HTMLElement {
     disconnectedCallback(): void;
     /**
      * @param {string} name change attribute
-     * @param {any} _oldValue
+     * @param {any} oldValue
      * @param {any} newValue new value
      */
-    attributeChangedCallback(name: string, _oldValue: any, newValue: any): void;
+    attributeChangedCallback(name: string, oldValue: any, newValue: any): void;
     /**
      * Set string and number attributes on element only. Set all other values as
      * properties to avoid type conversion to and from string
@@ -77,6 +70,12 @@ export class MiElement extends HTMLElement {
      * @param {any} newValue
      */
     setAttribute(name: string, newValue: any): void;
+    /**
+     * controls if component shall be updated
+     * @param {Record<string,any>} [_changedAttributes] previous values of changed attributes
+     * @returns {boolean}
+     */
+    shouldUpdate(_changedAttributes?: Record<string, any> | undefined): boolean;
     /**
      * request rendering
      */
@@ -91,16 +90,11 @@ export class MiElement extends HTMLElement {
      */
     render(): void;
     /**
-     * controls if component shall be updated
-     * @param {Record<string,any>} _changedAttributes changed attributes
-     * @returns {boolean}
-     */
-    shouldUpdate(_changedAttributes: Record<string, any>): boolean;
-    /**
      * called every time the components needs a render update
-     * @param {Record<string,any>} _changedAttributes changed attributes
+     * @param {Record<string,any>} [_changedAttributes] previous values of changed
+     * attributes
      */
-    update(_changedAttributes: Record<string, any>): void;
+    update(_changedAttributes?: Record<string, any> | undefined): void;
     /**
      * Adds listener function for eventName. listener is removed before component
      * disconnects
@@ -136,7 +130,6 @@ export class MiElement extends HTMLElement {
 }
 export function define(name: string, element: typeof MiElement, options?: object): void;
 export function convertType(any: any, type: any): any;
-export type Signal = import("./signal.js").Signal;
 /**
  * controller
  */

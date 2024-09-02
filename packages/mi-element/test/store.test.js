@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { Store, subscribeToStore, createSignal } from '../src/index.js'
+import { Store, Signal } from '../src/index.js'
 
 describe('store', () => {
   const actions = {
@@ -27,7 +27,7 @@ describe('store', () => {
     it('shall fail if action overwrites', () => {
       try {
         const actions = {
-          notify:
+          get:
             (by = 1) =>
             (state) =>
               state + by
@@ -35,119 +35,49 @@ describe('store', () => {
         new Store(actions, 0)
         throw new Error()
       } catch (err) {
-        expect(err.message).toBe('action "notify" is already defined')
+        expect(err.message).toBe('action "get" is already defined')
       }
     })
 
     it('shall create a store with action', () => {
       const initialValue = 7
       const store = new Store(actions, initialValue)
-      expect(store.value).toBe(7)
+      expect(store.get()).toBe(7)
     })
 
     it('shall change store value and notify subscribers', async () => {
       const p = Promise.withResolvers()
       const store = new Store(actions, 0)
       const events = []
-      const unsubscribe = store.subscribe((value) => {
-        events.push(`a:${value}`)
+      const unsubscribe = Signal.effect(() => {
+        events.push(`a:${store.get()}`)
       })
-      store.subscribe((value) => {
-        events.push(`b:${value}`)
+      Signal.effect(() => {
+        events.push(`b:${store.get()}`)
         if (events.length > 5) {
           p.resolve()
         }
       })
       expect(typeof unsubscribe).toBe('function')
       setTimeout(() => {
-        store.value++
-        store.value++
+        store.increment()
+        store.increment()
         unsubscribe()
-        store.value++
-        store.value++
-      })
+        store.increment()
+        store.increment()
+        // p.reject(new Error())
+      }, 10)
       await p.promise
-      expect(events).toEqual(['a:1', 'b:1', 'a:2', 'b:2', 'b:3', 'b:4'])
-    })
-  })
-
-  describe('subscribeToStore()', () => {
-    class MockPiElement {
-      events = []
-      disposers = []
-      dispose(listener) {
-        this.events.push('dispose')
-        this.disposers.push(listener)
-      }
-      requestUpdate() {
-        this.events.push('requestUpdate')
-      }
-      disconnectedCallback() {
-        this.disposers.forEach((listener) => listener())
-      }
-    }
-
-    it('element shall subscribe to store', async () => {
-      const store = new Store(actions, 0)
-      const element = new MockPiElement()
-      subscribeToStore(element, store, 'store')
-      store.increment(3)
-      expect(element.store).toBe(3)
-      expect(element.events).toEqual(['dispose', 'requestUpdate'])
-      store.increment(3)
-      expect(element.store).toBe(6)
-      expect(element.events).toEqual([
-        'dispose',
-        'requestUpdate',
-        'requestUpdate'
+      expect(events).toEqual([
+        'a:0',
+        'b:0',
+        'a:1',
+        'b:1',
+        'a:2',
+        'b:2',
+        'b:3',
+        'b:4'
       ])
-      element.disconnectedCallback()
-      store.increment(3)
-      // element won't get notified as being disconnected
-      expect(element.store).toBe(6)
-      expect(element.events.length).toEqual(3)
-    })
-
-    it('element shall subscribe to store with signal', async () => {
-      const store = new Store(actions, 0)
-      const element = new MockPiElement()
-      const signal = createSignal(0)
-      signal.subscribe((value) => {
-        element.events.push('value', value)
-      })
-      subscribeToStore(element, store, signal)
-      store.increment(3)
-      expect(signal.value).toBe(3)
-      // requestUpdate will not be called
-      expect(element.events).toEqual(['dispose', 'value', 3])
-      // signal gets disconnected
-      element.disconnectedCallback()
-      store.increment(3)
-      // signal won't get notified as being disconnected
-      expect(signal.value).toBe(3)
-    })
-
-    it('element shall fail if property does not exist', () => {
-      const store = new Store(actions, 0)
-      const element = new MockPiElement()
-      try {
-        subscribeToStore(element, store, ['stores', 'counter'])
-        throw new Error()
-      } catch (err) {
-        expect(err.message).toBe('object expected for property "stores"')
-      }
-    })
-
-    it('element shall subscribe to stores', async () => {
-      const storeA = new Store(actions, 0)
-      const storeB = new Store(actions, 2)
-      const element = new MockPiElement()
-      element.stores = {}
-      subscribeToStore(element, storeA, 'stores.a')
-      subscribeToStore(element, storeB, 'stores.b')
-      storeA.increment(3)
-      storeB.increment(2)
-      expect(element.stores).toEqual({ a: 3, b: 4 })
     })
   })
 })

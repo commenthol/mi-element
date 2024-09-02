@@ -1,36 +1,54 @@
 /**
- * @typedef {(value: any) => void} Callback
+ * @param {() => void} cb
  */
-export class Signal {
+export function effect(cb: () => void): () => void;
+/**
+ * @template T
+ * @typedef {{equals: (value?: T|null, nextValue?: T|null) => boolean}} SignalOptions
+ */
+/**
+ * tries to follow proposal (a bit)
+ * @see https://github.com/tc39/proposal-signals
+ * @template T
+ */
+export class State<T> {
     /**
-     * creates a new signal with an initial value
-     * @param {any} [initialValue]
+     * @param {T|null} [value]
+     * @param {SignalOptions<T>} [options]
      */
-    constructor(initialValue?: any);
-    _subscribers: Set<any>;
-    _value: any;
+    constructor(value?: T | null | undefined, options?: SignalOptions<T> | undefined);
+    subscribers: Set<any>;
+    value: T | null | undefined;
+    equals: (value?: T | null | undefined, nextValue?: T | null | undefined) => boolean;
     /**
-     * set new value on signal;
-     * if value has changed all subscribers are called
-     * @param {any} newValue
+     * @returns {T|null|undefined}
      */
-    set value(newValue: any);
+    get(): T | null | undefined;
     /**
-     * return current value
-     * @returns {any}
+     * @param {T|null|undefined} nextValue
      */
-    get value(): any;
-    /**
-     * notify all subscribers on current value
-     */
-    notify(): void;
-    /**
-     * subscribe to signal to receive value updates
-     * @param {Callback} callback
-     * @returns {() => void} unsubscribe function
-     */
-    subscribe(callback: Callback): () => void;
+    set(nextValue: T | null | undefined): void;
 }
-export function createSignal(initialValue?: any): Signal;
-export function isSignalLike(possibleSignal: any): boolean;
-export type Callback = (value: any) => void;
+export function createSignal<T>(value: T): State<T>;
+export class Computed {
+    /**
+     * @param {() => void} cb
+     */
+    constructor(cb: () => void);
+    state: State<any>;
+    /**
+     * @template T
+     * @returns {T}
+     */
+    get<T>(): T;
+}
+declare namespace _default {
+    export { State };
+    export { createSignal };
+    export { effect };
+    export { Computed };
+}
+export default _default;
+export type SignalOptions<T> = {
+    equals: (value?: T | null, nextValue?: T | null) => boolean;
+};

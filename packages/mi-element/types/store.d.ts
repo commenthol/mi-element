@@ -5,20 +5,27 @@
  * @typedef {(state: any, data?: any) => any} Action
  */
 /**
+ * @template T
+ * @typedef {import('./signal.js').SignalOptions<T>} SignalOptions<T>
+ */
+/**
  * Store implementing [Flux](https://www.npmjs.com/package/flux) pattern based
  * on Signals
+ * @template T
  */
-export class Store extends Signal {
+export class Store<T> extends State<any> {
     /**
      * @param {Record<string, Action>} actions
-     * @param {any} [initialValue]
+     * @param {T|null} [initialValue]
+     * @param {SignalOptions<T>} [options]
      * @example
      * ```js
+     * import { Signal, Store } from 'mi-element'
      * const actions = { increment: (by = 1) => (current) => current + by }
      * const initialValue = 1
      * const store = new Store(actions, initialValue)
      * // subscribe with a callback function
-     * const unsubscribe = store.subscribe((value) => console.log(`count is ${value}`))
+     * const unsubscribe = Signal.effect(() => console.log(`count is ${store.get()}`))
      * // change the store
      * store.increment(2) // increment by 2
      * //> count is 3
@@ -30,13 +37,28 @@ export class Store extends Signal {
      * ```js
      * const initialValue = { count: 0, other: 'foo' }
      * const actions = {
-     *  increment: (by = 1) => (state) => ({...state, count: state.count + by})
+     *   increment: (by = 1) => (state) => ({...state, count: state.count + by})
      * }
      * ```
+     * or you change the signals options equality function
+     * ```js
+     * const actions = {
+     *   increment: (by = 1) => (state) => {
+     *     state.count += by
+     *     return state
+     *   }
+     * }
+     * const initialValue = { count: 0, other: 'foo' }
+     * const options = { equals: (value, nextValue) => true }
+     * const store = new Store(actions, initialValue, options)
+     * ```
      */
-    constructor(actions: Record<string, Action>, initialValue?: any);
+    constructor(actions: Record<string, Action>, initialValue?: T | null | undefined, options?: SignalOptions<T> | undefined);
 }
-export function subscribeToStore(element: MiElement, store: Store, propOrSignal: string | string[] | Signal): void;
 export type MiElement = import("./element.js").MiElement;
 export type Action = (state: any, data?: any) => any;
-import { Signal } from './signal.js';
+/**
+ * <T>
+ */
+export type SignalOptions<T> = import("./signal.js").SignalOptions<T>;
+import { State } from './signal.js';

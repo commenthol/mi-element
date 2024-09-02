@@ -18,7 +18,7 @@ describe('MiElement', () => {
       camelCase: ''
     }
 
-    let renderChanges = null
+    let previousAttrs = null
 
     class MiTest extends MiElement {
       static get attributes() {
@@ -28,14 +28,14 @@ describe('MiElement', () => {
       static template = `<pre></pre>`
 
       render() {
-        renderChanges = null
+        previousAttrs = null
         this.refs = refsBySelector(this.renderRoot, { pre: 'pre' })
       }
 
       update(changedAttributes) {
         this.refs.pre.textContent = JSON.stringify(this, null, 2)
-        renderChanges = { ...renderChanges, ...changedAttributes }
-        console.debug('update', renderChanges)
+        previousAttrs = { ...previousAttrs, ...changedAttributes }
+        console.debug('update', previousAttrs)
       }
     }
 
@@ -44,7 +44,7 @@ describe('MiElement', () => {
     let el
 
     beforeEach(() => {
-      renderChanges = null
+      previousAttrs = null
       document.body.innerHTML = null
       el = document.createElement(tag)
       document.body.appendChild(el)
@@ -133,8 +133,8 @@ describe('MiElement', () => {
       await nap()
     })
 
-    it('shall resove camelCased attributes', async () => {
-      const camels = '🐫🐫'
+    it('shall resolve camelCased attributes', async () => {
+      const camels = '🐪🐫'
       el.setAttribute('camelcase', camels)
       expect(el.camelCase).toBe(camels)
       expect(el.getAttribute('camelcase')).toBe(camels)
@@ -142,15 +142,15 @@ describe('MiElement', () => {
       await nap()
     })
 
-    it('shall pass changed attributes on render()', async () => {
+    it('shall pass previous attributes on render()', async () => {
       await nap()
       el.setAttribute('camelcase', '🐫')
-      el.setAttribute('haha', '🐫')
+      el.setAttribute('cantset', '❌')
       el.number = 42
       await nap()
-      expect(renderChanges).toStrictEqual({
-        camelCase: '🐫',
-        number: 42
+      expect(previousAttrs).toStrictEqual({
+        camelCase: '',
+        number: 1
       })
     })
   })

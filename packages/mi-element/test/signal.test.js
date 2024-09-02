@@ -1,75 +1,62 @@
 import { describe, it, expect } from 'vitest'
-import { createSignal, isSignalLike } from '../src/index.js'
-import { nap } from './helpers.js'
+import { Signal } from '../src/index.js'
+
+const { createSignal, effect } = Signal
 
 describe('signal', () => {
   it('shall create a signal', () => {
     const signal = createSignal()
-    expect(signal.value).toBe(undefined)
+    expect(signal.get()).toBe(undefined)
   })
 
-  it('isSignalLike is true', () => {
-    const signal = createSignal()
-    expect(isSignalLike(signal)).toBe(true)
-  })
+  // it('isSignalLike is true', () => {
+  //   const signal = createSignal()
+  //   expect(isSignalLike(signal)).toBe(true)
+  // })
 
   it('shall subscribe to changes', async () => {
-    const signal = createSignal()
+    const signal = createSignal(0)
     const p = Promise.withResolvers()
-    signal.subscribe((value) => {
-      p.resolve(value)
+    effect(() => {
+      if (signal.get() !== 0) p.resolve(signal.get())
     })
     setTimeout(() => {
-      signal.value = 'foo'
+      signal.set('foo')
     }, 25)
     const actual = await p.promise
-    expect(actual).toBe(signal.value)
+    expect(actual).toBe(signal.get())
   })
 
   it('shall notify only if value changes', async () => {
     const signal = createSignal('foo')
     const p = Promise.withResolvers()
     const events = []
-    signal.subscribe((value) => {
-      events.push(value)
-      p.resolve(value)
+    effect(() => {
+      events.push(signal.get())
+      if (events.length >= 2) {
+        p.resolve()
+      }
     })
     setTimeout(() => {
-      signal.value = 'foo'
-      signal.value = 'bar'
+      signal.set('bar')
+      signal.set('wat')
     })
-    const actual = await p.promise
-    expect(actual).toBe(signal.value)
-    expect(events).toEqual(['bar'])
+    await p.promise
+    expect(events).toEqual(['foo', 'bar', 'wat'])
   })
 
   it('shall subscribe and unsubscribe', async () => {
-    const signal = createSignal()
-    const p = Promise.withResolvers()
-    const events = []
-    const unsubscribe = signal.subscribe((value) => {
-      events.push(value)
-      p.resolve(value)
-    })
-    signal.value = 'foo'
-    const actual = await p.promise
-    expect(actual).toBe(signal.value)
-    unsubscribe()
-    signal.value = 'bar'
-    await nap(10)
-    expect(events).toEqual(['foo'])
-  })
-
-  it('shall subscribe and notify', async () => {
     const signal = createSignal('foo')
     const p = Promise.withResolvers()
-    signal.subscribe((value) => {
-      p.resolve(value)
+    const events = []
+    const unsubscribe = effect(() => {
+      events.push(signal.get())
+      if (events.length == 2) p.resolve()
     })
-    setTimeout(() => {
-      signal.notify()
-    }, 25)
-    const actual = await p.promise
-    expect(actual).toBe(signal.value)
+    signal.set('bar')
+    await p.promise
+    unsubscribe()
+    signal.set('wat')
+    expect(events).toEqual(['foo', 'bar'])
   })
 })

@@ -2,7 +2,7 @@
  * @see https://github.com/webcomponents-cg/community-protocols/blob/main/proposals/context.md
  */
 
-import { createSignal, isSignalLike } from './signal.js'
+import { createSignal, effect } from './signal.js'
 
 /**
  * @typedef {import('./element.js').HostController} HostController
@@ -25,9 +25,7 @@ export class ContextProvider {
   constructor(host, context, initialValue) {
     this.host = host
     this.context = context
-    this.state = isSignalLike(initialValue)
-      ? initialValue
-      : createSignal(initialValue)
+    this.state = createSignal(initialValue)
     // @ts-expect-error
     this.host.addController?.(this)
   }
@@ -45,19 +43,15 @@ export class ContextProvider {
   /**
    * @param {any} newValue
    */
-  set value(newValue) {
-    this.state.value = newValue
+  set(newValue) {
+    this.state.set(newValue)
   }
 
   /**
    * @returns {any}
    */
-  get value() {
-    return this.state.value
-  }
-
-  notify() {
-    this.state.notify()
+  get() {
+    return this.state.get()
   }
 
   /**
@@ -70,10 +64,17 @@ export class ContextProvider {
       return
     }
     ev.stopPropagation()
-    const unsubscribe = ev.subscribe
-      ? this.state.subscribe(ev.callback)
-      : undefined
-    ev.callback(this.value, unsubscribe)
+    console.debug('provider.onContextRequest', this.state)
+    let unsubscribe
+    if (ev.subscribe) {
+      unsubscribe = effect(() => {
+        // needed to subscribe to signal
+        const value = this.get()
+        // don't call callback the first time where unsubscribe is not defined
+        if (unsubscribe) ev.callback(value, unsubscribe)
+      })
+    }
+    ev.callback(this.get(), unsubscribe)
   }
 }
 
@@ -140,6 +141,7 @@ export class ContextConsumer {
   }
 
   _callback(value, unsubscribe) {
+    console.debug('consumer.callback', { value, unsubscribe })
     if (unsubscribe) {
       if (!this.subscribe) {
         // unsubscribe as we didn't ask for subscription

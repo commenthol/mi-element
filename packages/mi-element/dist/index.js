@@ -6,8 +6,8 @@ export { esc, escAttr, escHtml } from './escape.js';
 
 export { refsById, refsBySelector } from './refs.js';
 
-export { Signal, createSignal, isSignalLike } from './signal.js';
+export { default as Signal } from './signal.js';
 
-export { Store, subscribeToStore } from './store.js';
+export { Store } from './store.js';
 
 export { classMap, styleMap } from './styling.js';

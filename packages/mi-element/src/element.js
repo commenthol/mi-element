@@ -1,8 +1,5 @@
+import { camelToKebabCase } from './case.js'
 import { createSignal } from './signal.js'
-
-/**
- * @typedef {import('./signal.js').Signal} Signal
- */
 
 /**
  * @typedef {object} HostController controller
@@ -52,8 +49,6 @@ export class MiElement extends HTMLElement {
   #disposers = new Set()
   #controllers = new Set()
   #changedAttr = {}
-  // signals allow for finer control of updates
-  #signals = {}
 
   /**
    * Default options used when calling `attachShadow`. Used in
@@ -65,38 +60,29 @@ export class MiElement extends HTMLElement {
   constructor() {
     super()
     // @ts-expect-error
-    this.#attr = { ...this.constructor.attributes }
-    this.#observedAttributes()
-  }
-
-  /**
-   * @returns {Record<string, Signal>|{}}
-   */
-  get signals() {
-    return this.#signals
+    this.#observedAttributes(this.constructor.attributes)
   }
 
   /**
    * requests update on component when property changes
    */
-  #observedAttributes() {
-    for (const [name, value] of Object.entries(this.#attr)) {
-      this.#signals[name] = createSignal(value)
+  #observedAttributes(attributes = {}) {
+    for (const [name, value] of Object.entries(attributes)) {
       this.#types.set(name, initialType(value))
       this.#attrLc.set(name.toLowerCase(), name)
+      this.#attrLc.set(camelToKebabCase(name), name)
+      this.#attr[name] = createSignal(value)
       Object.defineProperty(this, name, {
         enumerable: true,
         get() {
-          return this.#attr[name]
+          return this.#attr[name].get()
         },
         set(newValue) {
           console.debug('%s.%s =', this.nodeName, name, newValue)
-          const oldValue = this.#attr[name]
+          const oldValue = this.#attr[name].get()
           if (oldValue === newValue) return
-          this.#attr[name] =
-            this.#signals[name].value =
-            this.#changedAttr[name] =
-              newValue
+          this.#attr[name].set(newValue)
+          this.#changedAttr[name] = oldValue
           this.requestUpdate()
         }
       })
@@ -147,14 +133,14 @@ export class MiElement extends HTMLElement {
 
   /**
    * @param {string} name change attribute
-   * @param {any} _oldValue
+   * @param {any} oldValue
    * @param {any} newValue new value
    */
-  attributeChangedCallback(name, _oldValue, newValue) {
+  attributeChangedCallback(name, oldValue, newValue) {
     const attr = this.#getName(name)
     const type = this.#getType(attr)
-    const _newValue = convertType(newValue, type)
-    this[attr] = this.#changedAttr[attr] = _newValue
+    this.#changedAttr[attr] = this[attr]
+    this[attr] = convertType(newValue, type)
     // correct initial setting of `trueish="false"` otherwise there's no chance
     // to overwrite a trueish value. The case `falsish="true"` is covered.
     if (type === 'Boolean' && newValue === 'false') {
@@ -164,7 +150,7 @@ export class MiElement extends HTMLElement {
       '%s.attributeChangedCallback("%s",',
       this.nodeName,
       name,
-      _oldValue,
+      oldValue,
       newValue
     )
     this.requestUpdate()
@@ -183,7 +169,6 @@ export class MiElement extends HTMLElement {
       return
     }
     const type = this.#getType(attr)
-    this[attr] = this.#changedAttr[attr] = newValue
     console.debug('%s.setAttribute("%s",', this.nodeName, name, newValue)
 
     // only set string values in these cases
@@ -196,8 +181,19 @@ export class MiElement extends HTMLElement {
     } else if (['String', 'Number'].includes(type) || newValue === true) {
       super.setAttribute(name, newValue)
     } else {
+      this.#changedAttr[attr] = this[attr]
+      this[attr] = newValue
       this.requestUpdate()
     }
+  }
+
+  /**
+   * controls if component shall be updated
+   * @param {Record<string,any>} [_changedAttributes] previous values of changed attributes
+   * @returns {boolean}
+   */
+  shouldUpdate(_changedAttributes) {
+    return true
   }
 
   /**
@@ -232,17 +228,9 @@ export class MiElement extends HTMLElement {
   render() {}
 
   /**
-   * controls if component shall be updated
-   * @param {Record<string,any>} _changedAttributes changed attributes
-   * @returns {boolean}
-   */
-  shouldUpdate(_changedAttributes) {
-    return true
-  }
-
-  /**
    * called every time the components needs a render update
-   * @param {Record<string,any>} _changedAttributes changed attributes
+   * @param {Record<string,any>} [_changedAttributes] previous values of changed
+   * attributes
    */
   update(_changedAttributes) {}
 

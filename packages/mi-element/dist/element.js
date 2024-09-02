@@ -1,3 +1,5 @@
+import { camelToKebabCase } from './case.js';
+
 import { createSignal } from './signal.js';
 
 class MiElement extends HTMLElement {
@@ -7,28 +9,23 @@ class MiElement extends HTMLElement {
   #disposers=new Set;
   #controllers=new Set;
   #changedAttr={};
-  #signals={};
   static shadowRootOptions={
     mode: 'open'
   };
   constructor() {
-    super(), this.#attr = {
-      ...this.constructor.attributes
-    }, this.#observedAttributes();
+    super(), this.#observedAttributes(this.constructor.attributes);
   }
-  get signals() {
-    return this.#signals;
-  }
-  #observedAttributes() {
-    for (const [name, value] of Object.entries(this.#attr)) this.#signals[name] = createSignal(value), 
-    this.#types.set(name, initialType(value)), this.#attrLc.set(name.toLowerCase(), name), 
-    Object.defineProperty(this, name, {
+  #observedAttributes(attributes = {}) {
+    for (const [name, value] of Object.entries(attributes)) this.#types.set(name, initialType(value)), 
+    this.#attrLc.set(name.toLowerCase(), name), this.#attrLc.set(camelToKebabCase(name), name), 
+    this.#attr[name] = createSignal(value), Object.defineProperty(this, name, {
       enumerable: !0,
       get() {
-        return this.#attr[name];
+        return this.#attr[name].get();
       },
       set(newValue) {
-        this.#attr[name] !== newValue && (this.#attr[name] = this.#signals[name].value = this.#changedAttr[name] = newValue, 
+        const oldValue = this.#attr[name].get();
+        oldValue !== newValue && (this.#attr[name].set(newValue), this.#changedAttr[name] = oldValue, 
         this.requestUpdate());
       }
     });
@@ -48,16 +45,20 @@ class MiElement extends HTMLElement {
   disconnectedCallback() {
     this.#disposers.forEach((remover => remover())), this.#controllers.forEach((controller => controller.hostDisconnected?.()));
   }
-  attributeChangedCallback(name, _oldValue, newValue) {
-    const attr = this.#getName(name), type = this.#getType(attr), _newValue = convertType(newValue, type);
-    this[attr] = this.#changedAttr[attr] = _newValue, 'Boolean' === type && 'false' === newValue && this.removeAttribute(name), 
-    this.requestUpdate();
+  attributeChangedCallback(name, oldValue, newValue) {
+    const attr = this.#getName(name), type = this.#getType(attr);
+    this.#changedAttr[attr] = this[attr], this[attr] = convertType(newValue, type), 
+    'Boolean' === type && 'false' === newValue && this.removeAttribute(name), this.requestUpdate();
   }
   setAttribute(name, newValue) {
     const attr = this.#getName(name);
     if (!(attr in this.#attr)) return;
     const type = this.#getType(attr);
-    this[attr] = this.#changedAttr[attr] = newValue, 'Boolean' === type ? !0 === newValue || '' === newValue ? super.setAttribute(name, '') : super.removeAttribute(name) : [ 'String', 'Number' ].includes(type) || !0 === newValue ? super.setAttribute(name, newValue) : this.requestUpdate();
+    'Boolean' === type ? !0 === newValue || '' === newValue ? super.setAttribute(name, '') : super.removeAttribute(name) : [ 'String', 'Number' ].includes(type) || !0 === newValue ? super.setAttribute(name, newValue) : (this.#changedAttr[attr] = this[attr], 
+    this[attr] = newValue, this.requestUpdate());
+  }
+  shouldUpdate(_changedAttributes) {
+    return !0;
   }
   requestUpdate() {
     this.isConnected && requestAnimationFrame((() => {
@@ -68,9 +69,6 @@ class MiElement extends HTMLElement {
     template instanceof HTMLTemplateElement && this.renderRoot.appendChild(template.content.cloneNode(!0));
   }
   render() {}
-  shouldUpdate(_changedAttributes) {
-    return !0;
-  }
   update(_changedAttributes) {}
   on(eventName, listener, node = this) {
     node.addEventListener(eventName, listener), this.#disposers.add((() => node.removeEventListener(eventName, listener)));

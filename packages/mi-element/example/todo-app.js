@@ -13,6 +13,8 @@ class TodoApp extends MiElement {
   static shadowRootOptions = null
 
   static template = `
+  <button id="clear">Clear completed</button>
+  <button id="store">Clear storage</button>
   <section>
     <todo-input id="input"></todo-input>
     <ul id="list-container"></ul>
@@ -27,7 +29,7 @@ class TodoApp extends MiElement {
         { text: 'my initial todo', checked: false },
         { text: 'Learn about Web Components', checked: true }
       ]
-      for (let i = 0; i < 1000; i++) {
+      for (let i = 0; i < 20; i++) {
         this._list.push({
           text: i + ' Learn about Web Components',
           checked: true
@@ -39,6 +41,15 @@ class TodoApp extends MiElement {
   render() {
     this.refs = refsById(this.renderRoot)
     this.refs.input.addEventListener('onSubmit', this.addItem)
+    this.refs.clear.addEventListener('click', () => {
+      this._list = this._list.filter((item) => !item.checked)
+      store(this._list)
+      this.requestUpdate()
+    })
+    this.refs.store.addEventListener('click', () => {
+      localStorage.clear(LIST)
+      location.reload()
+    })
   }
 
   update() {
@@ -67,6 +78,7 @@ class TodoApp extends MiElement {
   removeItem = (ev) => {
     this._list.splice(ev.detail, 1)
     store(this._list)
+    this.requestUpdate()
   }
 
   toggleItem = (ev) => {

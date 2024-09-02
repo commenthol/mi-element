@@ -8,6 +8,9 @@ import {
 } from '../src/index.js'
 import { nap } from './helpers.js'
 
+const log = () => {}
+// const log = console.log
+
 describe('context', () => {
   class MiTestContextProvider extends MiElement {
     static get attributes() {
@@ -31,12 +34,13 @@ describe('context', () => {
     }
 
     _providerValue() {
-      // create a new object on every change
+      // creates a new object on every change
       return { value: this.value, increment: this.increment }
     }
 
     update() {
-      this.provider.value = this._providerValue()
+      this.provider.set(this._providerValue())
+      log('provider-update', this.provider.state)
     }
   }
 
@@ -59,11 +63,13 @@ describe('context', () => {
       })
       this.refs = refsById(this.renderRoot)
       this.addEventListener('click', () => {
+        log('click')
         this.consumer.value.increment()
       })
     }
 
     update() {
+      log('consumer-update', this.consumer)
       this.refs.span.textContent = this.consumer.value?.value || 0
     }
   }
@@ -84,6 +90,28 @@ describe('context', () => {
 
   beforeEach(() => {
     document.body.innerHTML = null
+  })
+
+  it('shall increment one consumers', async () => {
+    const el = document.createElement('div')
+    el.innerHTML = `
+    <mi-test-context-provider>
+      <div>
+        <mi-test-context-consumer id="first">
+        </mi-test-context-consumer>
+      </div>
+    </mi-test-context-provider>
+    `
+    document.body.appendChild(el)
+    expect(getCounters(el)).toEqual(['0'])
+    await nap()
+    const $first = el.querySelector('#first')
+    $first.dispatchEvent(clickEvent())
+    await nap(300)
+    expect(getCounters(el)).toEqual(['1'])
+    $first.dispatchEvent(clickEvent())
+    await nap(300)
+    expect(getCounters(el)).toEqual(['2'])
   })
 
   it('shall increment both consumers', async () => {

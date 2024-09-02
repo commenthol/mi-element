@@ -10,18 +10,17 @@ export class ContextProvider implements HostController {
     constructor(host: HTMLElement, context: Context, initialValue: any);
     host: HTMLElement;
     context: Context;
-    state: any;
+    state: import("./signal.js").State<any>;
     hostConnected(): void;
     hostDisconnected(): void;
     /**
      * @param {any} newValue
      */
-    set value(newValue: any);
+    set(newValue: any): void;
     /**
      * @returns {any}
      */
-    get value(): any;
-    notify(): void;
+    get(): any;
     /**
      * @private
      * @param {ContextRequestEvent} ev

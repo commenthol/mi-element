@@ -1,76 +1,111 @@
+// global context for nested reactivity
+const context = []
+
 /**
- * @typedef {(value: any) => void} Callback
+ * @template T
+ * @typedef {{equals: (value?: T|null, nextValue?: T|null) => boolean}} SignalOptions
  */
 
-export class Signal {
-  _subscribers = new Set()
+/**
+ * tries to follow proposal (a bit)
+ * @see https://github.com/tc39/proposal-signals
+ * @template T
+ */
+export class State {
+  subscribers = new Set()
 
   /**
-   * creates a new signal with an initial value
-   * @param {any} [initialValue]
+   * @param {T|null} [value]
+   * @param {SignalOptions<T>} [options]
    */
-  constructor(initialValue) {
-    this._value = initialValue
+  constructor(value, options) {
+    const { equals } = options || {}
+    this.value = value
+    this.equals = equals ?? ((value, nextValue) => value === nextValue)
   }
 
   /**
-   * return current value
-   * @returns {any}
+   * @returns {T|null|undefined}
    */
-  get value() {
-    return this._value
+  get() {
+    const running = context[context.length - 1]
+    if (running) {
+      this.subscribers.add(running)
+      running.dependencies.add(this.subscribers)
+    }
+    return this.value
   }
 
   /**
-   * set new value on signal;
-   * if value has changed all subscribers are called
-   * @param {any} newValue
+   * @param {T|null|undefined} nextValue
    */
-  set value(newValue) {
-    // value or reference must have changed to notify subscribers
-    if (this._value === newValue) {
+  set(nextValue) {
+    if (this.equals(this.value, nextValue)) {
       return
     }
-    this._value = newValue
-    this.notify()
-  }
-
-  /**
-   * notify all subscribers on current value
-   */
-  notify() {
-    for (const callback of this._subscribers) {
-      callback(this._value)
+    this.value = nextValue
+    for (const running of [...this.subscribers]) {
+      // run the effect()
+      running.execute()
     }
-  }
-
-  /**
-   * subscribe to signal to receive value updates
-   * @param {Callback} callback
-   * @returns {() => void} unsubscribe function
-   */
-  subscribe(callback) {
-    this._subscribers.add(callback)
-    const unsubscribe = () => {
-      this._subscribers.delete(callback)
-    }
-    return unsubscribe
   }
 }
 
 /**
- * creates a signal
- * @param {any} [initialValue]
- * @returns {Signal}
+ * @template T
+ * @param {T} value
+ * @returns {State<T>}
  */
-export const createSignal = (initialValue) => new Signal(initialValue)
+export const createSignal = (value) =>
+  value instanceof State ? value : new State(value)
+
+function cleanup(running) {
+  // delete all dependent subscribers from state
+  for (const dep of running.dependencies) {
+    dep.delete(running)
+  }
+  running.dependencies.clear()
+}
 
 /**
- * check if implements signal like features
- * @param {any} possibleSignal
- * @returns {boolean}
+ * @param {() => void} cb
  */
-export const isSignalLike = (possibleSignal) =>
-  typeof possibleSignal?.subscribe === 'function' &&
-  typeof possibleSignal?.notify === 'function' &&
-  'value' in possibleSignal
+export function effect(cb) {
+  const execute = () => {
+    cleanup(running)
+    context.push(running)
+    try {
+      cb()
+    } finally {
+      context.pop()
+    }
+  }
+
+  const running = { execute, dependencies: new Set() }
+  execute()
+
+  return () => {
+    // unsubscribe from all dependencies
+    cleanup(running)
+  }
+}
+
+export class Computed {
+  /**
+   * @param {() => void} cb
+   */
+  constructor(cb) {
+    this.state = new State()
+    effect(() => this.state.set(cb))
+  }
+
+  /**
+   * @template T
+   * @returns {T}
+   */
+  get() {
+    return this.state.get()
+  }
+}
+
+export default { State, createSignal, effect, Computed }

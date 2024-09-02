@@ -13,11 +13,13 @@ export { MiElement, convertType, define } from './element.js'
 export { esc, escAttr, escHtml } from './escape.js'
 export { refsById, refsBySelector } from './refs.js'
 /**
- * @typedef {import('./signal.js').Callback} Callback
+ * @template T
+ * @typedef {import('./signal.js').SignalOptions<T>} SignalOptions<T>
  */
-export { Signal, createSignal, isSignalLike } from './signal.js'
+import Signal from './signal.js'
+export { Signal }
 /**
  * @typedef {import('./store.js').Action} Action
  */
-export { Store, subscribeToStore } from './store.js'
+export { Store } from './store.js'
 export { classMap, styleMap } from './styling.js'

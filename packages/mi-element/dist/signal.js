@@ -1,24 +1,62 @@
-class Signal {
-  _subscribers=new Set;
-  constructor(initialValue) {
-    this._value = initialValue;
+const context = [];
+
+class State {
+  subscribers=new Set;
+  constructor(value, options) {
+    const {equals: equals} = options || {};
+    this.value = value, this.equals = equals ?? ((value, nextValue) => value === nextValue);
   }
-  get value() {
-    return this._value;
+  get() {
+    const running = context[context.length - 1];
+    return running && (this.subscribers.add(running), running.dependencies.add(this.subscribers)), 
+    this.value;
   }
-  set value(newValue) {
-    this._value !== newValue && (this._value = newValue, this.notify());
-  }
-  notify() {
-    for (const callback of this._subscribers) callback(this._value);
-  }
-  subscribe(callback) {
-    return this._subscribers.add(callback), () => {
-      this._subscribers.delete(callback);
-    };
+  set(nextValue) {
+    if (!this.equals(this.value, nextValue)) {
+      this.value = nextValue;
+      for (const running of [ ...this.subscribers ]) running.execute();
+    }
   }
 }
 
-const createSignal = initialValue => new Signal(initialValue), isSignalLike = possibleSignal => 'function' == typeof possibleSignal?.subscribe && 'function' == typeof possibleSignal?.notify && 'value' in possibleSignal;
+const createSignal = value => value instanceof State ? value : new State(value);
 
-export { Signal, createSignal, isSignalLike };
+function cleanup(running) {
+  for (const dep of running.dependencies) dep.delete(running);
+  running.dependencies.clear();
+}
+
+function effect(cb) {
+  const execute = () => {
+    cleanup(running), context.push(running);
+    try {
+      cb();
+    } finally {
+      context.pop();
+    }
+  }, running = {
+    execute: execute,
+    dependencies: new Set
+  };
+  return execute(), () => {
+    cleanup(running);
+  };
+}
+
+class Computed {
+  constructor(cb) {
+    this.state = new State, effect((() => this.state.set(cb)));
+  }
+  get() {
+    return this.state.get();
+  }
+}
+
+var signal = {
+  State: State,
+  createSignal: createSignal,
+  effect: effect,
+  Computed: Computed
+};
+
+export { Computed, State, createSignal, signal as default, effect };

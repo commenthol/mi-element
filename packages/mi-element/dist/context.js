@@ -1,8 +1,8 @@
-import { isSignalLike, createSignal } from './signal.js';
+import { createSignal, effect } from './signal.js';
 
 class ContextProvider {
   constructor(host, context, initialValue) {
-    this.host = host, this.context = context, this.state = isSignalLike(initialValue) ? initialValue : createSignal(initialValue), 
+    this.host = host, this.context = context, this.state = createSignal(initialValue), 
     this.host.addController?.(this);
   }
   hostConnected() {
@@ -11,20 +11,19 @@ class ContextProvider {
   hostDisconnected() {
     this.host.removeEventListener("context-request", this.onContextRequest);
   }
-  set value(newValue) {
-    this.state.value = newValue;
+  set(newValue) {
+    this.state.set(newValue);
   }
-  get value() {
-    return this.state.value;
-  }
-  notify() {
-    this.state.notify();
+  get() {
+    return this.state.get();
   }
   onContextRequest=ev => {
     if (ev.context !== this.context) return;
-    ev.stopPropagation();
-    const unsubscribe = ev.subscribe ? this.state.subscribe(ev.callback) : void 0;
-    ev.callback(this.value, unsubscribe);
+    let unsubscribe;
+    ev.stopPropagation(), ev.subscribe && (unsubscribe = effect((() => {
+      const value = this.get();
+      unsubscribe && ev.callback(value, unsubscribe);
+    }))), ev.callback(this.get(), unsubscribe);
   };
 }
 
