@@ -1,3 +1,18 @@
+**Table of contents**
+
+<!-- !toc (minlevel=2) -->
+
+* [constructor()](#constructor)
+* [connectedCallback()](#connectedcallback)
+* [disconnectedCallback()](#disconnectedcallback)
+* [attributeChangedCallback(name, oldValue, newValue)](#attributechangedcallbackname-oldvalue-newvalue)
+* [Update Cycle](#update-cycle)
+* [render()](#render)
+* [update(changedAttributes)](#updatechangedattributes)
+* [shouldUpdate(changedAttributes)](#shouldupdatechangedattributes)
+
+<!-- toc! -->
+
 # Lifecycle
 
 MiElement components use the [standard custom element lifecycle callbacks][].
@@ -199,7 +214,7 @@ Within the `render()` method, bear in mind to:
 Using [`innerHTML`][innerHTML] to create the components DOM is susceptible to
 [XSS][XSS] attacks in case that user-supplied data contains valid HTML markup.
 
-In all other cases you may consider <code>esc``</code>, `escHtml()` or `escAttr()`
+In all other cases you may consider <code>esc``</code>, `escHtml()`or`escAttr()`
 from the "mi-element" import, which escapes user-supplied data.
 
 [innerHTML]: https://developer.mozilla.org/en-US/docs/Web/API/Element/innerHTML
@@ -288,7 +303,43 @@ To mitigate [XSS][] attacks prefer the use of `.textContent` and avoid
 ~~`.innerHTML`~~. For attribute changes use `.setAttribute(name, newValue)`.
 Both `.textContent` and `setAttribute()` provide escaping for you.
 
+For finer control on updates the use of signals is encouraged. With this there
+is no need to add logic to `shouldUpdate()` or `update()`.
+
+```js
+import { MiElement, Signal } from 'mi-element'
+
+class Counter extends MiElement {
+  static get attributes() {
+    return { value: 0 }
+  }
+
+  static template = `
+  <button>Count</button>
+  <p>Counter value: <span>0</span></p>
+  `
+
+  render() {
+    const refs = refsBySelector(this.renderRoot, {
+      button: 'button',
+      count: 'span'
+    })
+
+    refs.button.addEventListener('click', () => {
+      this.value++
+    })
+
+    Signal.effect(() => {
+      // an update only happens if `this.value` changes; 
+      // other attribute changes are ignored.
+      refs.count.textContent = this.value
+    })
+  }
+}
+```
+
+
 ## shouldUpdate(changedAttributes)
 
-Conveniance method in order to be able to decide on the changed attributes,
+Convenience method in order to be able to decide on the changed attributes,
 whether `update()` should be called or not.

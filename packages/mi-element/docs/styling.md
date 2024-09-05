@@ -1,3 +1,12 @@
+**Table of contents**
+
+<!-- !toc (minlevel=2) -->
+
+* [classMap](#classmap)
+* [styleMap](#stylemap)
+
+<!-- toc! -->
+
 # Styling
 
 ## classMap

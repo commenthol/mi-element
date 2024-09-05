@@ -1,3 +1,13 @@
+**Table of contents**
+
+<!-- !toc (minlevel=2) -->
+
+* [ContextProvider](#contextprovider)
+* [ContextConsumer](#contextconsumer)
+* [Connecting consumers to providers](#connecting-consumers-to-providers)
+
+<!-- toc! -->
+
 # Context
 
 Implements the [Context Protocol][].

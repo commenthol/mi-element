@@ -77,6 +77,7 @@
   "scripts": {
     "all": "npm-run-all pretty lint test build types",
     "build": "rimraf dist && rollup -c && gzip -k dist/index.min.js && ls -al dist && rimraf dist/index.min.*",
+    "docs": "cd docs; for f in *.md; do markedpp -s -i $f; done",
     "example": "vite --open /example/",
     "lint": "eslint",
     "pretty": "prettier -w **/*.js",
