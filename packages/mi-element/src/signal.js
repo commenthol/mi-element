@@ -1,18 +1,32 @@
+/**
+ * tries to follow proposal JavaScript Signals standard proposal which is in
+ * stage 1
+ * @see https://github.com/tc39/proposal-signals
+ */
+
 // global context for nested reactivity
 const context = []
 
 /**
  * @template T
- * @typedef {{equals: (value?: T|null, nextValue?: T|null) => boolean}} SignalOptions
+ * @typedef {(value?: T|null, nextValue?: T|null) => boolean} EqualsFn
+ * Custom comparison function between old and new value
+ * default `(value, nextValue) => value === nextValue`
  */
 
 /**
- * tries to follow proposal (a bit)
- * @see https://github.com/tc39/proposal-signals
+ * @template T
+ * @typedef {{equals: EqualsFn<T>}} SignalOptions
+ */
+
+/**
+ * read- write signal
  * @template T
  */
 export class State {
-  subscribers = new Set()
+  #subscribers = new Set()
+  #value
+  #equals
 
   /**
    * @param {T|null} [value]
@@ -20,8 +34,8 @@ export class State {
    */
   constructor(value, options) {
     const { equals } = options || {}
-    this.value = value
-    this.equals = equals ?? ((value, nextValue) => value === nextValue)
+    this.#value = value
+    this.#equals = equals ?? ((value, nextValue) => value === nextValue)
   }
 
   /**
@@ -30,21 +44,21 @@ export class State {
   get() {
     const running = context[context.length - 1]
     if (running) {
-      this.subscribers.add(running)
-      running.dependencies.add(this.subscribers)
+      this.#subscribers.add(running)
+      running.dependencies.add(this.#subscribers)
     }
-    return this.value
+    return this.#value
   }
 
   /**
    * @param {T|null|undefined} nextValue
    */
   set(nextValue) {
-    if (this.equals(this.value, nextValue)) {
+    if (this.#equals(this.#value, nextValue)) {
       return
     }
-    this.value = nextValue
-    for (const running of [...this.subscribers]) {
+    this.#value = nextValue
+    for (const running of [...this.#subscribers]) {
       // run the effect()
       running.execute()
     }
@@ -53,11 +67,14 @@ export class State {
 
 /**
  * @template T
- * @param {T} value
+ * @param {T} initialValue
+ * @param {SignalOptions<T>} [options]
  * @returns {State<T>}
  */
-export const createSignal = (value) =>
-  value instanceof State ? value : new State(value)
+export const createSignal = (initialValue, options) =>
+  initialValue instanceof State
+    ? initialValue
+    : new State(initialValue, options)
 
 function cleanup(running) {
   // delete all dependent subscribers from state
@@ -68,7 +85,7 @@ function cleanup(running) {
 }
 
 /**
- * @param {() => void} cb
+ * @param {() => void|Promise<void>} cb
  */
 export function effect(cb) {
   const execute = () => {
@@ -90,13 +107,18 @@ export function effect(cb) {
   }
 }
 
+/**
+ * @template T
+ */
 export class Computed {
+  #state
+
   /**
-   * @param {() => void} cb
+   * @param {() => T} cb
    */
   constructor(cb) {
-    this.state = new State()
-    effect(() => this.state.set(cb))
+    this.#state = new State()
+    effect(() => this.#state.set(cb()))
   }
 
   /**
@@ -104,7 +126,7 @@ export class Computed {
    * @returns {T}
    */
   get() {
-    return this.state.get()
+    return this.#state.get()
   }
 }
 

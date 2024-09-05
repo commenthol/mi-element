@@ -1,14 +1,19 @@
 /**
- * @param {() => void} cb
+ * @param {() => void|Promise<void>} cb
  */
-export function effect(cb: () => void): () => void;
+export function effect(cb: () => void | Promise<void>): () => void;
 /**
  * @template T
- * @typedef {{equals: (value?: T|null, nextValue?: T|null) => boolean}} SignalOptions
+ * @typedef {(value?: T|null, nextValue?: T|null) => boolean} EqualsFn
+ * Custom comparison function between old and new value
+ * default `(value, nextValue) => value === nextValue`
  */
 /**
- * tries to follow proposal (a bit)
- * @see https://github.com/tc39/proposal-signals
+ * @template T
+ * @typedef {{equals: EqualsFn<T>}} SignalOptions
+ */
+/**
+ * read- write signal
  * @template T
  */
 export class State<T> {
@@ -17,9 +22,6 @@ export class State<T> {
      * @param {SignalOptions<T>} [options]
      */
     constructor(value?: T | null | undefined, options?: SignalOptions<T> | undefined);
-    subscribers: Set<any>;
-    value: T | null | undefined;
-    equals: (value?: T | null | undefined, nextValue?: T | null | undefined) => boolean;
     /**
      * @returns {T|null|undefined}
      */
@@ -28,19 +30,23 @@ export class State<T> {
      * @param {T|null|undefined} nextValue
      */
     set(nextValue: T | null | undefined): void;
+    #private;
 }
-export function createSignal<T>(value: T): State<T>;
-export class Computed {
+export function createSignal<T>(initialValue: T, options?: SignalOptions<T> | undefined): State<T>;
+/**
+ * @template T
+ */
+export class Computed<T> {
     /**
-     * @param {() => void} cb
+     * @param {() => T} cb
      */
-    constructor(cb: () => void);
-    state: State<any>;
+    constructor(cb: () => T);
     /**
      * @template T
      * @returns {T}
      */
-    get<T>(): T;
+    get<T_1>(): T_1;
+    #private;
 }
 declare namespace _default {
     export { State };
@@ -49,6 +55,11 @@ declare namespace _default {
     export { Computed };
 }
 export default _default;
+/**
+ * Custom comparison function between old and new value
+ * default `(value, nextValue) => value === nextValue`
+ */
+export type EqualsFn<T> = (value?: T | null, nextValue?: T | null) => boolean;
 export type SignalOptions<T> = {
-    equals: (value?: T | null, nextValue?: T | null) => boolean;
+    equals: EqualsFn<T>;
 };

@@ -1,25 +1,27 @@
 const context = [];
 
 class State {
-  subscribers=new Set;
+  #subscribers=new Set;
+  #value;
+  #equals;
   constructor(value, options) {
     const {equals: equals} = options || {};
-    this.value = value, this.equals = equals ?? ((value, nextValue) => value === nextValue);
+    this.#value = value, this.#equals = equals ?? ((value, nextValue) => value === nextValue);
   }
   get() {
     const running = context[context.length - 1];
-    return running && (this.subscribers.add(running), running.dependencies.add(this.subscribers)), 
-    this.value;
+    return running && (this.#subscribers.add(running), running.dependencies.add(this.#subscribers)), 
+    this.#value;
   }
   set(nextValue) {
-    if (!this.equals(this.value, nextValue)) {
-      this.value = nextValue;
-      for (const running of [ ...this.subscribers ]) running.execute();
+    if (!this.#equals(this.#value, nextValue)) {
+      this.#value = nextValue;
+      for (const running of [ ...this.#subscribers ]) running.execute();
     }
   }
 }
 
-const createSignal = value => value instanceof State ? value : new State(value);
+const createSignal = (initialValue, options) => initialValue instanceof State ? initialValue : new State(initialValue, options);
 
 function cleanup(running) {
   for (const dep of running.dependencies) dep.delete(running);
@@ -44,11 +46,12 @@ function effect(cb) {
 }
 
 class Computed {
+  #state;
   constructor(cb) {
-    this.state = new State, effect((() => this.state.set(cb)));
+    this.#state = new State, effect((() => this.#state.set(cb())));
   }
   get() {
-    return this.state.get();
+    return this.#state.get();
   }
 }
 
