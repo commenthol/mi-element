@@ -1,4 +1,6 @@
 /**
+ * effect subscribes to state at first run only. Do not hide a signal.get()
+ * inside conditionals!
  * @param {() => void|Promise<void>} cb
  */
 export function effect(cb: () => void | Promise<void>): () => void;
@@ -16,7 +18,7 @@ export function effect(cb: () => void | Promise<void>): () => void;
  * read- write signal
  * @template T
  */
-export class State<T> {
+export class State<T> extends EventTarget {
     /**
      * @param {T|null} [value]
      * @param {SignalOptions<T>} [options]

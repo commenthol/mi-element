@@ -2,6 +2,7 @@
  * tries to follow proposal JavaScript Signals standard proposal which is in
  * stage 1
  * @see https://github.com/tc39/proposal-signals
+ * @credits https://github.com/jsebrech/tiny-signals
  */
 
 // global context for nested reactivity
@@ -23,8 +24,7 @@ const context = []
  * read- write signal
  * @template T
  */
-export class State {
-  #subscribers = new Set()
+export class State extends EventTarget {
   #value
   #equals
 
@@ -33,6 +33,7 @@ export class State {
    * @param {SignalOptions<T>} [options]
    */
   constructor(value, options) {
+    super()
     const { equals } = options || {}
     this.#value = value
     this.#equals = equals ?? ((value, nextValue) => value === nextValue)
@@ -44,8 +45,7 @@ export class State {
   get() {
     const running = context[context.length - 1]
     if (running) {
-      this.#subscribers.add(running)
-      running.dependencies.add(this.#subscribers)
+      running.add(this)
     }
     return this.#value
   }
@@ -58,10 +58,7 @@ export class State {
       return
     }
     this.#value = nextValue
-    for (const running of [...this.#subscribers]) {
-      // run the effect()
-      running.execute()
-    }
+    this.dispatchEvent(new CustomEvent('signal'))
   }
 }
 
@@ -76,34 +73,29 @@ export const createSignal = (initialValue, options) =>
     ? initialValue
     : new State(initialValue, options)
 
-function cleanup(running) {
-  // delete all dependent subscribers from state
-  for (const dep of running.dependencies) {
-    dep.delete(running)
-  }
-  running.dependencies.clear()
-}
-
 /**
+ * effect subscribes to state at first run only. Do not hide a signal.get()
+ * inside conditionals!
  * @param {() => void|Promise<void>} cb
  */
 export function effect(cb) {
-  const execute = () => {
-    cleanup(running)
-    context.push(running)
-    try {
-      cb()
-    } finally {
-      context.pop()
-    }
-  }
+  const running = new Set()
 
-  const running = { execute, dependencies: new Set() }
-  execute()
+  context.push(running)
+  try {
+    cb()
+  } finally {
+    context.pop()
+  }
+  for (const dep of running) {
+    dep.addEventListener('signal', cb)
+  }
 
   return () => {
     // unsubscribe from all dependencies
-    cleanup(running)
+    for (const dep of running) {
+      dep.removeEventListener('signal', cb)
+    }
   }
 }
 
