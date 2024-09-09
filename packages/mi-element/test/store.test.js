@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { Store, Signal } from '../src/index.js'
+import { Store, effect } from '../src/index.js'
 
 describe('store', () => {
   const actions = {
@@ -49,10 +49,10 @@ describe('store', () => {
       const p = Promise.withResolvers()
       const store = new Store(actions, 0)
       const events = []
-      const unsubscribe = Signal.effect(() => {
+      const unsubscribe = effect(() => {
         events.push(`a:${store.get()}`)
       })
-      Signal.effect(() => {
+      effect(() => {
         events.push(`b:${store.get()}`)
         if (events.length > 5) {
           p.resolve()

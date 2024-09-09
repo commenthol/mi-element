@@ -6,7 +6,7 @@ export { esc, escAttr, escHtml } from './escape.js';
 
 export { refsById, refsBySelector } from './refs.js';
 
-export { default as Signal } from './signal.js';
+export { Computed, default as Signal, State, createSignal, effect } from './signal.js';
 
 export { Store } from './store.js';
 

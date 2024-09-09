@@ -1,7 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { Signal } from '../src/index.js'
-
-const { createSignal, effect } = Signal
+import { createSignal, effect, Computed } from '../src/index.js'
 
 describe('signal', () => {
   it('shall create a signal', () => {
@@ -76,9 +74,7 @@ describe('signal', () => {
   it('shall create a computed signal', async () => {
     const firstName = createSignal('Joe')
     const lastName = createSignal('Doe')
-    const name = new Signal.Computed(
-      () => `${firstName.get()} ${lastName.get()}`
-    )
+    const name = new Computed(() => `${firstName.get()} ${lastName.get()}`)
     const events = []
     effect(() => {
       events.push(name.get())

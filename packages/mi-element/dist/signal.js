@@ -45,9 +45,9 @@ class Computed {
 
 var signal = {
   State: State,
+  Computed: Computed,
   createSignal: createSignal,
-  effect: effect,
-  Computed: Computed
+  effect: effect
 };
 
 export { Computed, State, createSignal, signal as default, effect };

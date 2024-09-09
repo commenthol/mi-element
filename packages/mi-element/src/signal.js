@@ -122,4 +122,4 @@ export class Computed {
   }
 }
 
-export default { State, createSignal, effect, Computed }
+export default { State, Computed, createSignal, effect }

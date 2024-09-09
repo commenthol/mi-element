@@ -2,11 +2,11 @@
 
 <!-- !toc (minlevel=2) -->
 
-* [State, createSignal](#state-createsignal)
-* [effect](#effect)
-  * [DONT'S](#donts)
-* [Computed Signals](#computed-signals)
-* [Signals in MiElement](#signals-in-mielement)
+- [State, createSignal](#state-createsignal)
+- [effect](#effect)
+  - [DONT'S](#donts)
+- [Computed Signals](#computed-signals)
+- [Signals in MiElement](#signals-in-mielement)
 
 <!-- toc! -->
 
@@ -24,11 +24,11 @@ For convenience there is a `createSignal(initialValue<T>): State<T>` function to
 create a signal.
 
 ```js
-import { Signal } from 'mi-element'
+import { createSignal, State } from 'mi-element'
 
-const signal = Signal.createSignal(1)
+const signal = createSignal(1)
 // same as
-const signal = new Signal.State(1)
+const signal = new State(1)
 
 signal.get()
 //> 1
@@ -46,7 +46,7 @@ a custom comparison function can be used, e.g. to trigger an effect on every
 const equals = (value, nextValue) => value === nextValue
 // changes to trigger change on every `.set()`
 const equals = (value, nextValue) => true
-const signal = Signal.createSignal(initialValue, { equals })
+const signal = createSignal(initialValue, { equals })
 ```
 
 ## effect
@@ -55,16 +55,16 @@ Reactivity is achieved by subscribing to a signals State using an effect
 callback function. Such callback function is called for registration to the
 signals state as well as to update on any change through
 `signal.set(nextValue)`. Within that callback the `signal.get()` must be called
-_synchronously_! 
+_synchronously_!
 
 ```js
-import { Signal } from 'mi-element'
+import { createSignal, effect } from 'mi-element'
 
-const signal = Signal.createSignal(1)
+const signal = createSignal(1)
 
 const callback = () => console.log('value is %s', signal.get())
 // `callback` is executed with assigning to the effect!
-const unsubscribe = Signal.effect(callback)
+const unsubscribe = effect(callback)
 //> "value is 1"
 signal.set(4)
 //> "value is 4"
@@ -79,7 +79,7 @@ For asynchronous usage, request the value from the signal first. Otherwise no
 subscription to the signal will take place.
 
 ```js
-const signal = Signal.createSignal(1)
+const signal = createSignal(1)
 
 const callback = async () => {
   // synchronously get the value
@@ -91,7 +91,7 @@ const callback = async () => {
   }, 100)
 }.catch(() => {})
 // callback is executed with assigning to the effect!
-Signal.effect(callback)
+effect(callback)
 ```
 
 ### DONT'S
@@ -103,7 +103,7 @@ warned to never set the signal in the an effects callback!
 const signal = createSignal(0)
 
 // DON'T DO THIS
-Signal.effect(() => {
+effect(() => {
   const value = signal.get()
   signal.set(value++) //< meeeeh
 })
@@ -117,31 +117,30 @@ const signal = createSignal(0)
 const rand = Math.random()
 
 // DON'T DO THIS
-Signal.effect(() => {
+effect(() => {
   if (rand < 0.5) {
     console.log(signal.get()) //< meeeeh
   }
 })
 
 // DO THIS
-Signal.effect(() => {
+effect(() => {
   const value = signal.get() //< much better
   if (rand < 0.5) {
-    console.log(value) 
+    console.log(value)
   }
 })
 ```
 
 ## Computed Signals
 
-Computed signals from more than one signal can be obtained from
-`Signal.Computed`.
+Computed signals from more than one signal can be obtained from `Computed`.
 
 ```js
 const firstName = createSignal('Joe')
 const lastName = createSignal('Doe')
 // define computed signal
-const name = new Signal.Computed(() => `${firstName.get()} ${lastName.get()}`)
+const name = new Computed(() => `${firstName.get()} ${lastName.get()}`)
 const events = []
 // apply effect
 effect(() => console.log(name.get()))
@@ -158,7 +157,7 @@ MiElement attributes are backed by signals. To subscribe to reactive changes a
 `Signal.effect` callback can be used on all observed attributes.
 
 ```js
-import { Signal, define, MiElement, refByIds } from 'mi-element'
+import { effect, define, MiElement, refByIds } from 'mi-element'
 
 define(
   'mi-counter',
@@ -181,7 +180,7 @@ define(
         // change observed and reactive attribute...
         this.count++
       })
-      Signal.effect(() => {
+      effect(() => {
         // ...triggers update on every change
         this.refs.div.textContent = `${this.count} clicks counted`
       })

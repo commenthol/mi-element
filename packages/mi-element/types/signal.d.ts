@@ -52,9 +52,9 @@ export class Computed<T> {
 }
 declare namespace _default {
     export { State };
+    export { Computed };
     export { createSignal };
     export { effect };
-    export { Computed };
 }
 export default _default;
 /**

@@ -16,8 +16,13 @@ export { refsById, refsBySelector } from './refs.js'
  * @template T
  * @typedef {import('./signal.js').SignalOptions<T>} SignalOptions<T>
  */
-import Signal from './signal.js'
-export { Signal }
+export {
+  default as Signal,
+  State,
+  createSignal,
+  effect,
+  Computed
+} from './signal.js'
 /**
  * @typedef {import('./store.js').Action} Action
  */
