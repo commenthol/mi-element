@@ -1,4 +1,4 @@
-import { define, MiElement, refsById } from '../dist/index.js'
+import { define, MiElement, refsById } from '../../dist/index.js'
 import './todo-input.js'
 import './todo-item.js'
 

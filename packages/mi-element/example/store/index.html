@@ -2,24 +2,26 @@
 <html dir="ltr" lang="en">
   <head>
     <meta charset="utf-8" />
-    <title>MiElement Examples</title>
-    <meta name="Description" content="MiElement Examples" />
+    <title>mi-element store example</title>
+    <meta name="Description" content="mi-element store example" />
     <meta
       name="viewport"
       content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=5.0"
     />
     <meta name="theme-color" content="#16161d" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
-
+    <style>
+      pre {
+        padding: 0.5em;
+        background-color: rgba(0,0,0,0.7);
+        color: #fff;
+      }
+    </style>
   </head>
 
   <body>
-    <h1>mi-element examples</h1>
-    <nav>
-      <ul>
-        <li><a href="./todo-app/">todo-app</a></li>
-        <li><a href="./store/">store example</a></li>
-      </ul>
-    </nav>
+    <h1>mi-element store example</h1>
+    <pre id="tty"></pre>
+    <script type="module" src="./store.js"></script>
   </body>
 </html>
