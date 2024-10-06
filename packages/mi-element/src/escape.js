@@ -35,4 +35,4 @@ export const escAttr = (string) =>
  * @returns {string}
  */
 export const esc = (strings, ...vars) =>
-  strings.map((string, i) => string + escHtml(vars[i] ?? '')).join('')
+  String.raw({ raw: strings }, ...vars.map(escHtml))
