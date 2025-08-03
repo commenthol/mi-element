@@ -68,7 +68,7 @@ export function addGlobalStyles(renderRoot) {
 }
 
 /**
- * Helper literal to show css styles in JS e.g. with 
+ * Helper literal to show css styles in JS e.g. with
  * https://marketplace.visualstudio.com/items?itemName=Tobermory.es6-string-html
  */
 export const css = (strings, ...values) =>

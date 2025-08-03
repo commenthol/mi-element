@@ -6,17 +6,18 @@
  * removed from the DOM, usually with disconnectedCallback()
  */
 /**
- * class extening HTMLElement to enable deferred rendering on attribute changes
+ * class extending HTMLElement to enable deferred rendering on attribute changes
  * either via `setAttribute(name, value)` or `this[name] = value`.
  * @see https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement
  * @example
  * ```js
  * class Example extends MiElement {
- *  // define all observed attributes with its default value.
+ *  // define all observed attributes with its default initial value.
+ *  // for yet to defined numbers, boolean or strings use `Number`, `Boolean`, `String`
  *  // attributes are accessible via `this[prop]`
  *  // avoid using attributes which are HTMLElement properties e.g. className
  *  static get attributes () {
- *    return { text: 'Hi' }
+ *    return { text: 'Hi', num: Number }
  *  }
  *  render() {
  *    this.renderRoot.innerHTML = `<div></div>`
@@ -75,7 +76,7 @@ export class MiElement extends HTMLElement {
      * @param {Record<string,any>} [_changedAttributes] previous values of changed attributes
      * @returns {boolean}
      */
-    shouldUpdate(_changedAttributes?: Record<string, any> | undefined): boolean;
+    shouldUpdate(_changedAttributes?: Record<string, any>): boolean;
     /**
      * request rendering
      */
@@ -94,7 +95,7 @@ export class MiElement extends HTMLElement {
      * @param {Record<string,any>} [_changedAttributes] previous values of changed
      * attributes
      */
-    update(_changedAttributes?: Record<string, any> | undefined): void;
+    update(_changedAttributes?: Record<string, any>): void;
     /**
      * Adds listener function for eventName. listener is removed before component
      * disconnects
@@ -102,7 +103,7 @@ export class MiElement extends HTMLElement {
      * @param {EventListenerOrEventListenerObject} listener
      * @param {Node|Document|Window} [node=this]
      */
-    on(eventName: string, listener: EventListenerOrEventListenerObject, node?: Node | Document | Window | undefined): void;
+    on(eventName: string, listener: EventListenerOrEventListenerObject, node?: Node | Document | Window): void;
     /**
      * Adds one-time listener function for eventName. The next time eventName is
      * triggered, this listener is removed and then invoked.

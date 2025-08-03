@@ -1,6 +1,6 @@
 class UnsafeHtml extends String {}
 
-/** 
+/**
  * tag a string as html for not to be escaped
  * @param {string} str
  * @returns {string}
@@ -26,7 +26,7 @@ const escMap = {
  */
 export const escHtml = (string) =>
   // @ts-expect-error
-  (string instanceof UnsafeHtml)
+  string instanceof UnsafeHtml
     ? string
     : ('' + string)
         .replace(/&amp;/g, '&')
