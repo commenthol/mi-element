@@ -10,17 +10,18 @@ import { createSignal } from './signal.js'
  */
 
 /**
- * class extening HTMLElement to enable deferred rendering on attribute changes
+ * class extending HTMLElement to enable deferred rendering on attribute changes
  * either via `setAttribute(name, value)` or `this[name] = value`.
  * @see https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement
  * @example
  * ```js
  * class Example extends MiElement {
- *  // define all observed attributes with its default value.
+ *  // define all observed attributes with its default initial value.
+ *  // for yet to defined numbers, boolean or strings use `Number`, `Boolean`, `String`
  *  // attributes are accessible via `this[prop]`
  *  // avoid using attributes which are HTMLElement properties e.g. className
  *  static get attributes () {
- *    return { text: 'Hi' }
+ *    return { text: 'Hi', num: Number }
  *  }
  *  render() {
  *    this.renderRoot.innerHTML = `<div></div>`
@@ -43,8 +44,19 @@ import { createSignal } from './signal.js'
  * ```
  */
 export class MiElement extends HTMLElement {
+  /** all attributes are signals! */
   #attr = {}
+  /**
+   * lower-cased or kebab-case attribute names;
+   * Map<lower-cased and kebab-cased attr name, camelCased attr name as string>
+   * @type {Map<string, string>}
+   */
   #attrLc = new Map()
+  /**
+   * initial types (from `static get attributes() { return {} }`)
+   * Map<camelCased attribute name, type as string>
+   * @type {Map<string,string>}
+   */
   #types = new Map()
   #disposers = new Set()
   #controllers = new Set()
@@ -68,17 +80,17 @@ export class MiElement extends HTMLElement {
    */
   #observedAttributes(attributes = {}) {
     for (const [name, value] of Object.entries(attributes)) {
-      this.#types.set(name, initialType(value))
+      const initial = initialValueType(value)
+      this.#types.set(name, initial.type)
       this.#attrLc.set(name.toLowerCase(), name)
       this.#attrLc.set(camelToKebabCase(name), name)
-      this.#attr[name] = createSignal(value)
+      this.#attr[name] = createSignal(initial.value)
       Object.defineProperty(this, name, {
         enumerable: true,
         get() {
           return this.#attr[name].get()
         },
         set(newValue) {
-          console.debug('%s.%s =', this.nodeName, name, newValue)
           const oldValue = this.#attr[name].get()
           if (oldValue === newValue) return
           this.#attr[name].set(newValue)
@@ -146,13 +158,6 @@ export class MiElement extends HTMLElement {
     if (type === 'Boolean' && newValue === 'false') {
       this.removeAttribute(name)
     }
-    console.debug(
-      '%s.attributeChangedCallback("%s",',
-      this.nodeName,
-      name,
-      oldValue,
-      newValue
-    )
     this.requestUpdate()
   }
 
@@ -169,7 +174,6 @@ export class MiElement extends HTMLElement {
       return
     }
     const type = this.#getType(attr)
-    console.debug('%s.setAttribute("%s",', this.nodeName, name, newValue)
 
     // only set string values in these cases
     if (type === 'Boolean') {
@@ -178,7 +182,7 @@ export class MiElement extends HTMLElement {
       } else {
         super.removeAttribute(name)
       }
-    } else if (['String', 'Number'].includes(type) || newValue === true) {
+    } else if (['String', 'Number'].includes(type ?? '') || newValue === true) {
       super.setAttribute(name, newValue)
     } else {
       this.#changedAttr[attr] = this[attr]
@@ -216,7 +220,7 @@ export class MiElement extends HTMLElement {
    */
   addTemplate(template) {
     if (!(template instanceof HTMLTemplateElement)) {
-      console.debug('template is not a HTMLTemplateElement')
+      console.warn('template is not a HTMLTemplateElement')
       return
     }
     this.renderRoot.appendChild(template.content.cloneNode(true))
@@ -327,7 +331,18 @@ const renderTemplate = (element) => {
   element.template = el
 }
 
-const initialType = (value) => toString.call(value).slice(8, -1)
+const initialValueType = (value) => {
+  switch (value) {
+    case Boolean:
+      return { value: undefined, type: 'Boolean' }
+    case Number:
+      return { value: undefined, type: 'Number' }
+    case String:
+      return { value: undefined, type: 'String' }
+    default:
+      return { value, type: toString.call(value).slice(8, -1) }
+  }
+}
 
 const toNumber = (any) => {
   const n = Number(any)

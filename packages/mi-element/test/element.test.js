@@ -15,8 +15,13 @@ describe('MiElement', () => {
       array: [1, 2, 'hi'],
       obj: { one: 1, two: '2' },
       function: () => 1,
-      camelCase: ''
+      camelCase: '',
+      undefString: String,
+      undefNumber: Number,
+      undefBoolean: Boolean
     }
+    const isExcludedAttribute = (name) =>
+      [Boolean, Number, String].includes(attributes[name])
 
     let previousAttrs = null
 
@@ -55,17 +60,25 @@ describe('MiElement', () => {
         acc[name] = el[name]
         return acc
       }, {})
-      expect(collect).toStrictEqual(attributes)
+      expect(collect).toStrictEqual({
+        ...attributes,
+        undefBoolean: undefined,
+        undefNumber: undefined,
+        undefString: undefined
+      })
       await nap()
     })
 
     it('shall set and get attributes', async () => {
       for (const [name, value] of Object.entries(attributes)) {
+        if (isExcludedAttribute(name)) continue
         el.setAttribute(name, value)
       }
 
       const collectAttrs = Object.keys(attributes).reduce((acc, name) => {
-        acc[name] = el.getAttribute(name)
+        if (!isExcludedAttribute(name)) {
+          acc[name] = el.getAttribute(name)
+        }
         return acc
       }, {})
 
@@ -112,7 +125,10 @@ describe('MiElement', () => {
         string: 'hi',
         true: true,
         undef: undefined,
-        zero: 0
+        zero: 0,
+        undefBoolean: undefined,
+        undefNumber: undefined,
+        undefString: undefined
       })
 
       await nap()
