@@ -1,3 +1,13 @@
+class UnsafeHtml extends String {}
+
+/**
+ * tag a string as html for not to be escaped
+ * @param {string} str
+ * @returns {string}
+ */
+// @ts-expect-error
+export const unsafeHtml = (str) => new UnsafeHtml(str)
+
 const escMap = {
   '&': '&amp;',
   '<': '&lt;',
@@ -15,18 +25,12 @@ const escMap = {
  * //> &lt;h1&gt;&quot;One&quot; &amp; &#39;Two&#39; &amp; Works&lt;/h1&gt;
  */
 export const escHtml = (string) =>
-  ('' + string).replace(/&amp;/g, '&').replace(/[&<>'"]/g, (tag) => escMap[tag])
-
-/**
- * escape HTML attribute
- * @param {string} string
- * @returns {string} escaped string
- * @example
- * escapeAttr("One's")
- * //> &quot;One&#39;s&quot;
- */
-export const escAttr = (string) =>
-  ('' + string).replace(/['"]/g, (tag) => escMap[tag])
+  // @ts-expect-error
+  string instanceof UnsafeHtml
+    ? string
+    : ('' + string)
+        .replace(/&amp;/g, '&')
+        .replace(/[&<>'"]/g, (tag) => escMap[tag])
 
 /**
  * template literal to HTML escape all values preventing XSS
@@ -35,4 +39,4 @@ export const escAttr = (string) =>
  * @returns {string}
  */
 export const esc = (strings, ...vars) =>
-  strings.map((string, i) => string + escHtml(vars[i] ?? '')).join('')
+  String.raw({ raw: strings }, ...vars.map(escHtml))

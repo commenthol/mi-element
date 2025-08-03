@@ -2,7 +2,7 @@
 
 <!-- !toc (minlevel=2) -->
 
-* [constructor()](#constructor)
+* [constructor()](#constructor-function Object() { [native code] })
 * [connectedCallback()](#connectedcallback)
 * [disconnectedCallback()](#disconnectedcallback)
 * [attributeChangedCallback(name, oldValue, newValue)](#attributechangedcallbackname-oldvalue-newvalue)
@@ -10,10 +10,12 @@
 * [render()](#render)
 * [update(changedAttributes)](#updatechangedattributes)
 * [shouldUpdate(changedAttributes)](#shouldupdatechangedattributes)
+* [on(eventName, listener, \[node])](#oneventname-listener-node)
+* [once(eventName, listener, \[node])](#onceeventname-listener-node)
 
 <!-- toc! -->
 
-# Lifecycle
+# Element Lifecycle
 
 MiElement components use the [standard custom element lifecycle callbacks][].
 
@@ -29,13 +31,20 @@ applied.
 ```js
 class extends MiElement {
   /**
-   * Declare observable attributes and their default values with getter.
-   * Avoid `static attribute = { text: 'Hi' }` as components attributes will use
-   * a shallow copy only. With the getter we always get a real "deep" copy.
+   * Declare observable attributes and their default values with this getter.
+   * Do not use `static attribute = { text: 'Hi' }` as components attributes 
+   * will use a shallow copy only. With the getter we always get a real "deep" 
+   * copy.
+   * 
+   * For yet to defined numbers, boolean or strings use `Number`, `Boolean`, 
+   * `String` attributes are accessible via `this[prop]`.
+   * Avoid using attributes which are HTMLElement properties e.g. className
    */
   static get attributes () {
     return {
-      text: 'Hi'
+      text: 'Hi',
+      // A yet to be defined boolean value
+      focus: Boolean
     }
   }
 
@@ -66,7 +75,8 @@ Then the first `render()` is issued with a `requestUpdate()`
 
 ```js
 class extends MiElement {
-  // this is the default shadow root option
+  // { mode: 'open' } is the default shadow root option 
+  // use `null` for no shadow root or { mode: 'closed' } for closed mode
   static shadowRootOptions = { mode: 'open' }
 
   connectedCallback() {
@@ -88,7 +98,7 @@ class extends MiElement {
 ```
 
 To simplify further use `this.on()` which automatically removes the event listener
-on window when component is unmounted with `disconnectedCallback()`.
+on `window` when the component is unmounted with `disconnectedCallback()`.
 
 ```js
 class extends MiElement {
@@ -211,11 +221,13 @@ Within the `render()` method, bear in mind to:
 - Avoid producing any side effects.
 - Use only the component's attributes as input.
 
-Using [`innerHTML`][innerHTML] to create the components DOM is susceptible to
-[XSS][XSS] attacks in case that user-supplied data contains valid HTML markup.
+!!! WARNING XSS - Cross-Site Scripting
+    
+    Using [`innerHTML`][innerHTML] to create the components DOM is susceptible to
+    [XSS][XSS] attacks in case that user-supplied data contains valid HTML markup.
 
-In all other cases you may consider <code>esc``</code>, `escHtml()`or`escAttr()`
-from the "mi-element" import, which escapes user-supplied data.
+In all other cases you may consider the <code>esc``</code> template literal or
+`escHtml()` from the "mi-element" import, which escapes user-supplied data.
 
 [innerHTML]: https://developer.mozilla.org/en-US/docs/Web/API/Element/innerHTML
 [XSS]: https://en.wikipedia.org/wiki/Cross-site_scripting
@@ -242,7 +254,7 @@ class Counter extends MiElement {
   // ...
   render() {
     /*
-    /// NEVER DO THIS, as this may cause XSS ///
+    // NEVER DO THIS, as this may cause XSS ///
     this.renderRoot.innerHTML = `
       <button>Count</button>
       <p>Counter value: <span>${this.count}</span></p>`
@@ -253,6 +265,7 @@ class Counter extends MiElement {
   }
 }
 
+// always use define with (3)
 define('mi-element-counter', Counter)
 ```
 
@@ -301,7 +314,8 @@ any changed attributes are passed.
 
 To mitigate [XSS][] attacks prefer the use of `.textContent` and avoid
 ~~`.innerHTML`~~. For attribute changes use `.setAttribute(name, newValue)`.
-Both `.textContent` and `setAttribute()` provide escaping for you.
+Both `.textContent` and `setAttribute()` provide escaping for you. 
+
 
 For finer control on updates the use of signals is encouraged. With this there
 is no need to add logic to `shouldUpdate()` or `update()`.
@@ -338,8 +352,30 @@ class Counter extends MiElement {
 }
 ```
 
-
 ## shouldUpdate(changedAttributes)
 
 Convenience method in order to be able to decide on the changed attributes,
 whether `update()` should be called or not.
+
+Return `true` if component should be updated. 
+
+## on(eventName, listener, \[node])
+
+Adds listener function for eventName. listener is removed before component
+disconnects.
+
+```js
+class Router extends MiElement {
+  render() {
+    // add event listener 'hashchange' to `window` which is disposed as soon as 
+    // the component unmounts
+    this.on('hashchange', this.update, window)
+  }
+  // ...
+}
+```
+
+## once(eventName, listener, \[node])
+
+Adds one-time listener function for eventName. The next time eventName is
+triggered, this listener is removed and then invoked.

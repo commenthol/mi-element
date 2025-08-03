@@ -16,19 +16,22 @@ class MiElement extends HTMLElement {
     super(), this.#observedAttributes(this.constructor.attributes);
   }
   #observedAttributes(attributes = {}) {
-    for (const [name, value] of Object.entries(attributes)) this.#types.set(name, initialType(value)), 
-    this.#attrLc.set(name.toLowerCase(), name), this.#attrLc.set(camelToKebabCase(name), name), 
-    this.#attr[name] = createSignal(value), Object.defineProperty(this, name, {
-      enumerable: !0,
-      get() {
-        return this.#attr[name].get();
-      },
-      set(newValue) {
-        const oldValue = this.#attr[name].get();
-        oldValue !== newValue && (this.#attr[name].set(newValue), this.#changedAttr[name] = oldValue, 
-        this.requestUpdate());
-      }
-    });
+    for (const [name, value] of Object.entries(attributes)) {
+      const initial = initialValueType(value);
+      this.#types.set(name, initial.type), this.#attrLc.set(name.toLowerCase(), name), 
+      this.#attrLc.set(camelToKebabCase(name), name), this.#attr[name] = createSignal(initial.value), 
+      Object.defineProperty(this, name, {
+        enumerable: !0,
+        get() {
+          return this.#attr[name].get();
+        },
+        set(newValue) {
+          const oldValue = this.#attr[name].get();
+          oldValue !== newValue && (this.#attr[name].set(newValue), this.#changedAttr[name] = oldValue, 
+          this.requestUpdate());
+        }
+      });
+    }
   }
   #getName(name) {
     return this.#attrLc.get(name) || name;
@@ -54,7 +57,7 @@ class MiElement extends HTMLElement {
     const attr = this.#getName(name);
     if (!(attr in this.#attr)) return;
     const type = this.#getType(attr);
-    'Boolean' === type ? !0 === newValue || '' === newValue ? super.setAttribute(name, '') : super.removeAttribute(name) : [ 'String', 'Number' ].includes(type) || !0 === newValue ? super.setAttribute(name, newValue) : (this.#changedAttr[attr] = this[attr], 
+    'Boolean' === type ? !0 === newValue || '' === newValue ? super.setAttribute(name, '') : super.removeAttribute(name) : [ 'String', 'Number' ].includes(type ?? '') || !0 === newValue ? super.setAttribute(name, newValue) : (this.#changedAttr[attr] = this[attr], 
     this[attr] = newValue, this.requestUpdate());
   }
   shouldUpdate(_changedAttributes) {
@@ -66,7 +69,7 @@ class MiElement extends HTMLElement {
     }));
   }
   addTemplate(template) {
-    template instanceof HTMLTemplateElement && this.renderRoot.appendChild(template.content.cloneNode(!0));
+    template instanceof HTMLTemplateElement ? this.renderRoot.appendChild(template.content.cloneNode(!0)) : console.warn('template is not a HTMLTemplateElement');
   }
   render() {}
   update(_changedAttributes) {}
@@ -99,7 +102,33 @@ const define = (name, element, options) => {
   if ('string' != typeof element.template) return;
   const el = document.createElement('template');
   el.innerHTML = element.template, element.template = el;
-}, initialType = value => toString.call(value).slice(8, -1), convertType = (any, type) => {
+}, initialValueType = value => {
+  switch (value) {
+   case Boolean:
+    return {
+      value: void 0,
+      type: 'Boolean'
+    };
+
+   case Number:
+    return {
+      value: void 0,
+      type: 'Number'
+    };
+
+   case String:
+    return {
+      value: void 0,
+      type: 'String'
+    };
+
+   default:
+    return {
+      value: value,
+      type: toString.call(value).slice(8, -1)
+    };
+  }
+}, convertType = (any, type) => {
   switch (type) {
    case 'Number':
     return (any => {

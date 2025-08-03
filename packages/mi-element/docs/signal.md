@@ -2,11 +2,11 @@
 
 <!-- !toc (minlevel=2) -->
 
-- [State, createSignal](#state-createsignal)
-- [effect](#effect)
-  - [DONT'S](#donts)
-- [Computed Signals](#computed-signals)
-- [Signals in MiElement](#signals-in-mielement)
+* [State, createSignal](#state-createsignal)
+* [effect](#effect)
+  * [DONT'S](#donts)
+* [Computed Signals](#computed-signals)
+* [Signals in MiElement](#signals-in-mielement)
 
 <!-- toc! -->
 

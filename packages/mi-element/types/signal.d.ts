@@ -23,7 +23,7 @@ export class State<T> extends EventTarget {
      * @param {T|null} [value]
      * @param {SignalOptions<T>} [options]
      */
-    constructor(value?: T | null | undefined, options?: SignalOptions<T> | undefined);
+    constructor(value?: T | null, options?: SignalOptions<T>);
     /**
      * @returns {T|null|undefined}
      */
@@ -34,7 +34,7 @@ export class State<T> extends EventTarget {
     set(nextValue: T | null | undefined): void;
     #private;
 }
-export function createSignal<T>(initialValue: T, options?: SignalOptions<T> | undefined): State<T>;
+export function createSignal<T>(initialValue: T, options?: SignalOptions<T>): State<T>;
 /**
  * @template T
  */

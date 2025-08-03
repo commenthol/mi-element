@@ -1,7 +1,7 @@
 # Store
 
 Store implements [Flux](https://www.npmjs.com/package/flux) pattern, which is a
-signal triggered by action (dispatchers).
+signal triggered by an action (dispatchers).
 
 1. Define actions which allow changing the store value.  
    The actions must be a function with the shape:
@@ -39,19 +39,21 @@ const actions = {
 const initialValue = 1
 const store = new Store(actions, initialValue)
 
-// subscribe with a callback function
-const callback = (value) => console.log(`count is ${value}`)
+// create effect, which is executed immediately
 const unsubscribe = Signal.effect(() => console.log(`count is ${store.get()}`))
+//> count is 1
 
 // change the store
 store.increment(2) // increment by 2
-//> count is now 3
+//> count is 3
 
 unsubscribe()
 ```
 
-if `initialValue` is an object, the object's reference must be changed
-using the spread operator, in order to notify on state changes, e.g.
+If `initialValue` is an object, the object's reference must be changed
+with the spread operator to notify on state changes, e.g.
+
+**Example**
 
 ```js
 const initialValue = { count: 0, other: 'foo' }

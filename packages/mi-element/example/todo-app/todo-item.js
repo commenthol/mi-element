@@ -1,4 +1,4 @@
-import { define, MiElement, refsBySelector } from '../dist/index.js'
+import { define, MiElement, refsBySelector } from '../../dist/index.js'
 
 class TodoItem extends MiElement {
   static shadowRootOptions = null

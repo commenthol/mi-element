@@ -33,7 +33,7 @@ export class ContextRequestEvent extends Event {
      * @param {(value: any, unsubscribe?: () => void) => void} callback
      * @param {boolean} [subscribe=false] subscribe to value changes
      */
-    constructor(context: Context, callback: (value: any, unsubscribe?: () => void) => void, subscribe?: boolean | undefined);
+    constructor(context: Context, callback: (value: any, unsubscribe?: () => void) => void, subscribe?: boolean);
     context: Context;
     callback: (value: any, unsubscribe?: () => void) => void;
     subscribe: boolean | undefined;
@@ -52,7 +52,7 @@ export class ContextConsumer implements HostController {
     constructor(host: HTMLElement, context: Context, options?: {
         subscribe?: boolean | undefined;
         validate?: ((any: any) => boolean) | undefined;
-    } | undefined);
+    });
     host: HTMLElement;
     context: Context;
     subscribe: boolean;

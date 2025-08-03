@@ -2,7 +2,7 @@ export { ContextConsumer, ContextProvider, ContextRequestEvent } from './context
 
 export { MiElement, convertType, define } from './element.js';
 
-export { esc, escAttr, escHtml } from './escape.js';
+export { esc, escHtml, unsafeHtml } from './escape.js';
 
 export { refsById, refsBySelector } from './refs.js';
 

@@ -64,7 +64,6 @@ export class ContextProvider {
       return
     }
     ev.stopPropagation()
-    console.debug('provider.onContextRequest', this.state)
     let unsubscribe
     if (ev.subscribe) {
       unsubscribe = effect(() => {
@@ -141,7 +140,6 @@ export class ContextConsumer {
   }
 
   _callback(value, unsubscribe) {
-    console.debug('consumer.callback', { value, unsubscribe })
     if (unsubscribe) {
       if (!this.subscribe) {
         // unsubscribe as we didn't ask for subscription

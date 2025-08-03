@@ -53,7 +53,7 @@ export class Store<T> extends State<any> {
      * const store = new Store(actions, initialValue, options)
      * ```
      */
-    constructor(actions: Record<string, Action>, initialValue?: T | null | undefined, options?: SignalOptions<T> | undefined);
+    constructor(actions: Record<string, Action>, initialValue?: T | null, options?: SignalOptions<T>);
 }
 export type MiElement = import("./element.js").MiElement;
 export type Action = (state: any, data?: any) => any;

@@ -8,7 +8,7 @@ export type SignalOptions<T> = import("./signal.js").SignalOptions<T>;
 export type Action = import("./store.js").Action;
 export { ContextConsumer, ContextProvider, ContextRequestEvent } from "./context.js";
 export { MiElement, convertType, define } from "./element.js";
-export { esc, escAttr, escHtml } from "./escape.js";
+export { unsafeHtml, esc, escHtml } from "./escape.js";
 export { refsById, refsBySelector } from "./refs.js";
 export { default as Signal, State, createSignal, effect, Computed } from "./signal.js";
 export { classMap, styleMap } from "./styling.js";
