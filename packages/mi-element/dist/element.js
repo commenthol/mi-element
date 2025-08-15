@@ -69,7 +69,7 @@ class MiElement extends HTMLElement {
     }));
   }
   addTemplate(template) {
-    template instanceof HTMLTemplateElement ? this.renderRoot.appendChild(template.content.cloneNode(!0)) : console.warn('template is not a HTMLTemplateElement');
+    template instanceof HTMLTemplateElement ? this.renderRoot.append(template.content.cloneNode(!0)) : console.warn('template is not a HTMLTemplateElement');
   }
   render() {}
   update(_changedAttributes) {}

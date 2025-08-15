@@ -223,7 +223,7 @@ export class MiElement extends HTMLElement {
       console.warn('template is not a HTMLTemplateElement')
       return
     }
-    this.renderRoot.appendChild(template.content.cloneNode(true))
+    this.renderRoot.append(template.content.cloneNode(true))
   }
 
   /**
