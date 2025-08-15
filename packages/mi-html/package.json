@@ -1,16 +1,76 @@
 {
   "name": "mi-html",
-  "version": "0.0.1",
-  "description": "",
-  "keywords": [],
+  "version": "0.5.0-0",
+  "description": "Signal for reactive behavior",
+  "keywords": [
+    "signal",
+    "effect"
+  ],
+  "homepage": "https://github.com/commenthol/mi-element/tree/main/packages/mi-signal",
+  "bugs": {
+    "url": "https://github.com/commenthol/mi-element/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/commenthol/mi-element.git",
+    "directory": "packages/mi-element"
+  },
   "license": "MIT",
   "author": "commenthol <commenthol@gmail.com>",
+  "maintainers": [
+    "commenthol <commenthol@gmail.com>"
+  ],
+  "sideEffects": false,
   "type": "module",
+  "exports": {
+    ".": {
+      "default": "./dist/index.js",
+      "development": "./src/index.js",
+      "types": "./types/index.d.ts"
+    },
+    "./package.json": {
+      "default": "./package.json"
+    }
+  },
   "main": "src/index.js",
   "files": [
-    "src"
+    "src",
+    "dist",
+    "types"
   ],
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "all": "npm-run-all pretty lint test build types",
+    "build": "rimraf dist && rollup -c && gzip -k dist/index.min.js && ls -al dist && rimraf dist/index.min.js.gz",
+    "docs": "cd docs; for f in *.md; do markedpp -s -i $f; done",
+    "example": "vite --open /example/",
+    "lint": "eslint",
+    "pretty": "prettier -w **/*.js",
+    "test": "vitest run --coverage",
+    "test:browser": "vitest --coverage",
+    "dev": "npm run test:browser",
+    "types": "tsc",
+    "setup": "pnpm exec playwright install"
+  },
+  "dependencies": {
+    "mi-signal": "workspace:",
+    "uhtml": "^4.7.1"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.33.0",
+    "@rollup/plugin-terser": "^0.4.4",
+    "@testing-library/dom": "^10.4.1",
+    "@types/node": "^22.17.2",
+    "@vitest/browser": "^2.1.9",
+    "@vitest/coverage-istanbul": "^2.1.9",
+    "eslint": "^9.33.0",
+    "globals": "^15.15.0",
+    "npm-run-all2": "^6.2.6",
+    "playwright": "^1.54.2",
+    "prettier": "^3.6.2",
+    "rimraf": "^6.0.1",
+    "rollup": "^4.46.2",
+    "typescript": "^5.9.2",
+    "vite": "^5.4.19",
+    "vitest": "^2.1.9"
   }
 }

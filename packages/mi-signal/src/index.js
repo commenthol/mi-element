@@ -42,6 +42,20 @@ export class State extends EventTarget {
   /**
    * @returns {T|null|undefined}
    */
+  get value() {
+    return this.get()
+  }
+
+  /**
+   * @param {T|null|undefined} nextValue
+   */
+  set value(nextValue) {
+    this.set(nextValue)
+  }
+
+  /**
+   * @returns {T|null|undefined}
+   */
   get() {
     const running = context[context.length - 1]
     if (running) {

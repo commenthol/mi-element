@@ -44,6 +44,24 @@ describe('signal', () => {
     expect(events).toEqual(['foo', 'bar', 'wat'])
   })
 
+  it('shall notify on value changes', async () => {
+    const signal = createSignal('foo')
+    const p = Promise.withResolvers()
+    const events = []
+    effect(() => {
+      events.push(signal.value)
+      if (events.length >= 2) {
+        p.resolve()
+      }
+    })
+    setTimeout(() => {
+      signal.value = 'bar'
+      signal.value = 'wat'
+    })
+    await p.promise
+    expect(events).toEqual(['foo', 'bar', 'wat'])
+  })
+
   it('shall subscribe and unsubscribe', async () => {
     const signal = createSignal('foo')
     const p = Promise.withResolvers()

@@ -25,6 +25,14 @@ export class State<T> extends EventTarget {
      */
     constructor(value?: T | null, options?: SignalOptions<T>);
     /**
+     * @param {T|null|undefined} nextValue
+     */
+    set value(nextValue: T | null | undefined);
+    /**
+     * @returns {T|null|undefined}
+     */
+    get value(): T | null | undefined;
+    /**
      * @returns {T|null|undefined}
      */
     get(): T | null | undefined;

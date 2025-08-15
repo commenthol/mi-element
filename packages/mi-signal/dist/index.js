@@ -8,6 +8,12 @@ class State extends EventTarget {
     const {equals: equals} = options || {};
     this.#value = value, this.#equals = equals ?? ((value, nextValue) => value === nextValue);
   }
+  get value() {
+    return this.get();
+  }
+  set value(nextValue) {
+    this.set(nextValue);
+  }
   get() {
     const running = context[context.length - 1];
     return running && running.add(this), this.#value;

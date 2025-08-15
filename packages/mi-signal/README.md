@@ -37,7 +37,7 @@ For convenience there is a `createSignal(initialValue<T>): State<T>` function to
 create a signal.
 
 ```js
-import { createSignal, State } from 'mi-element'
+import { createSignal, State } from 'mi-signal'
 
 const signal = createSignal(1)
 // same as
@@ -47,6 +47,18 @@ signal.get()
 //> 1
 signal.set(4)
 signal.get()
+//> 4
+```
+
+Instead of `.get()` or `.set(next)` `.value` with either getter or setter can be used.
+
+```js
+const signal = createSignal(1)
+
+signal.value
+//> 1
+signal.value = 4
+signal.value
 //> 4
 ```
 
@@ -71,7 +83,7 @@ signals state as well as to update on any change through
 _synchronously_!
 
 ```js
-import { createSignal, effect } from 'mi-element'
+import { createSignal, effect } from 'mi-signal'
 
 const signal = createSignal(1)
 
