@@ -10,4 +10,4 @@ export { Computed, default as Signal, State, createSignal, effect } from './sign
 
 export { Store } from './store.js';
 
-export { classMap, styleMap } from './styling.js';
+export { addGlobalStyles, classMap, styleMap } from './styling.js';

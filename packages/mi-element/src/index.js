@@ -27,4 +27,4 @@ export {
  * @typedef {import('./store.js').Action} Action
  */
 export { Store } from './store.js'
-export { classMap, styleMap } from './styling.js'
+export { classMap, styleMap, addGlobalStyles } from './styling.js'

@@ -11,4 +11,4 @@ export { MiElement, convertType, define } from "./element.js";
 export { unsafeHtml, html, escHtml } from "./escape.js";
 export { refsById, refsBySelector } from "./refs.js";
 export { default as Signal, State, createSignal, effect, Computed } from "./signal.js";
-export { classMap, styleMap } from "./styling.js";
+export { classMap, styleMap, addGlobalStyles } from "./styling.js";

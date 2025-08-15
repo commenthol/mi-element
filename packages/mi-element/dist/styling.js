@@ -14,4 +14,13 @@ const classMap = map => {
   return acc.join(';');
 };
 
-export { classMap, styleMap };
+let globalSheets = null;
+
+function addGlobalStyles(renderRoot) {
+  renderRoot.adoptedStyleSheets.push(...(null === globalSheets && (globalSheets = Array.from(document.styleSheets).map((({cssRules: cssRules}) => {
+    const sheet = new CSSStyleSheet, css = Array.from(cssRules).map((rule => rule.cssText)).join(' ');
+    return sheet.replaceSync(css), sheet;
+  }))), globalSheets));
+}
+
+export { addGlobalStyles, classMap, styleMap };
