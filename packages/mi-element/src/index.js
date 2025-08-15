@@ -10,7 +10,7 @@ export {
  * @typedef {import('./element.js').HostController} HostController
  */
 export { MiElement, convertType, define } from './element.js'
-export { unsafeHtml, esc, escHtml } from './escape.js'
+export { unsafeHtml, html, escHtml } from './escape.js'
 export { refsById, refsBySelector } from './refs.js'
 /**
  * @template T
