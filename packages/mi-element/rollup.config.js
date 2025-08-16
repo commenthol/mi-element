@@ -1,4 +1,5 @@
 import terser from '@rollup/plugin-terser'
+import { nodeResolve } from '@rollup/plugin-node-resolve'
 
 const terserOptsDeadCode = {
   compress: {
@@ -36,7 +37,7 @@ const tasks = [
     ]
   },
   {
-    input: 'src/index.js',
+    input: 'src/min.js',
     output: [
       {
         file: './dist/index.min.js',
@@ -44,7 +45,10 @@ const tasks = [
         sourcemap: true
       }
     ],
-    plugins: [terser({ ...terserOptsDeadCode })]
+    plugins: [
+      nodeResolve(),
+      terser({ ...terserOptsDeadCode })
+    ]
   }
 ]
 

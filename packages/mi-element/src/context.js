@@ -2,7 +2,7 @@
  * @see https://github.com/webcomponents-cg/community-protocols/blob/main/proposals/context.md
  */
 
-import { createSignal, effect } from './signal.js'
+import { createSignal, effect } from 'mi-signal'
 
 /**
  * @typedef {import('./element.js').HostController} HostController

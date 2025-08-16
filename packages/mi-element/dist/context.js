@@ -1,4 +1,4 @@
-import { createSignal, effect } from './signal.js';
+import { createSignal, effect } from 'mi-signal';
 
 class ContextProvider {
   constructor(host, context, initialValue) {

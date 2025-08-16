@@ -1,6 +1,6 @@
 import { camelToKebabCase } from './case.js';
 
-import { createSignal } from './signal.js';
+import { createSignal } from 'mi-signal';
 
 class MiElement extends HTMLElement {
   #attr={};

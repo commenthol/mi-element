@@ -6,7 +6,7 @@
  */
 /**
  * @template T
- * @typedef {import('./signal.js').SignalOptions<T>} SignalOptions<T>
+ * @typedef {import('mi-signal').SignalOptions<T>} SignalOptions<T>
  */
 /**
  * Store implementing [Flux](https://www.npmjs.com/package/flux) pattern based
@@ -60,5 +60,5 @@ export type Action = (state: any, data?: any) => any;
 /**
  * <T>
  */
-export type SignalOptions<T> = import("./signal.js").SignalOptions<T>;
-import { State } from './signal.js';
+export type SignalOptions<T> = import("mi-signal").SignalOptions<T>;
+import { State } from 'mi-signal';

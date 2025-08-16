@@ -2,7 +2,7 @@
 
 > a lightweight alternative to write web components
 
-Only weights 2.3kB minified and gzipped.
+Only weights 2.5kB minified and gzipped.
 
 mi-element provides features to build web applications through
 [Web Components][] like:
@@ -13,6 +13,7 @@ mi-element provides features to build web applications through
   component
 - Store for managing shared state across components
 - Signal for reactive behavior
+- optional html literal templating with [mi-html][] using reactive updates
 
 The motivation to build this module comes from the confusions around attributes
 and properties. "mi-element" solves this by providing the same results when
@@ -20,7 +21,7 @@ setting objects or functions either through `el.setAttribute(name, value)` or
 properties `el[name] = value`.
 
 Furthermore all observed attributes have a reactive behavior through the use of
-signals and effects. It implements signals (loosely) following the
+signals and effects (loosely) following the 
 [TC39 JavaScript Signals standard proposal][].
 
 # Usage
@@ -92,6 +93,7 @@ In `./example` you'll find a working sample of a Todo App. Check it out with
 - [store][docs-store] Manage shared state in an application
 - [context][docs-context] Implementation of the [Context Protocol][].
 - [styling][docs-styling] Styling directives for "class" and "style"
+- [reactivity][docs-reactifity] Reactivity and templating with [mi-html][]
 
 # License
 
@@ -103,6 +105,8 @@ MIT licensed
 [docs-signal]: https://github.com/commenthol/mi-element/tree/main/packages/mi-element/docs/signal.md
 [docs-store]: https://github.com/commenthol/mi-element/tree/main/packages/mi-element/docs/store.md
 [docs-styling]: https://github.com/commenthol/mi-element/tree/main/packages/mi-element/docs/styling.md
+[docs-reactifity]: https://github.com/commenthol/mi-element/tree/main/packages/mi-element/docs/reactivity.md
+[mi-html]: https://github.com/commenthol/mi-element/blob/main/packages/mi-html/README.md
 [Context Protocol]: https://github.com/webcomponents-cg/community-protocols/blob/main/proposals/context.md
 [Web Components]: https://developer.mozilla.org/en-US/docs/Web/API/Web_components/Using_custom_elements#custom_element_lifecycle_callbacks
 [TC39 JavaScript Signals standard proposal]: https://github.com/tc39/proposal-signals

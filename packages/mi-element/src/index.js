@@ -14,7 +14,7 @@ export { unsafeHtml, html, escHtml } from './escape.js'
 export { refsById, refsBySelector } from './refs.js'
 /**
  * @template T
- * @typedef {import('./signal.js').SignalOptions<T>} SignalOptions<T>
+ * @typedef {import('mi-signal').SignalOptions<T>} SignalOptions<T>
  */
 export {
   default as Signal,
@@ -22,7 +22,7 @@ export {
   createSignal,
   effect,
   Computed
-} from './signal.js'
+} from 'mi-signal'
 /**
  * @typedef {import('./store.js').Action} Action
  */

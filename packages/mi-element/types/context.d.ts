@@ -10,7 +10,7 @@ export class ContextProvider implements HostController {
     constructor(host: HTMLElement, context: Context, initialValue: any);
     host: HTMLElement;
     context: Context;
-    state: import("./signal.js").State<any>;
+    state: import("mi-signal").State<any>;
     hostConnected(): void;
     hostDisconnected(): void;
     /**

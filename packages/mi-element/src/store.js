@@ -1,4 +1,4 @@
-import { State } from './signal.js'
+import { State } from 'mi-signal'
 
 /**
  * @typedef {import('./element.js').MiElement} MiElement
@@ -8,7 +8,7 @@ import { State } from './signal.js'
  */
 /**
  * @template T
- * @typedef {import('./signal.js').SignalOptions<T>} SignalOptions<T>
+ * @typedef {import('mi-signal').SignalOptions<T>} SignalOptions<T>
  */
 
 /**

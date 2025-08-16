@@ -26,7 +26,7 @@ describe('directives', () => {
     })
   })
 
-  describe.only('addGlobalStyles', () => {
+  describe('addGlobalStyles', () => {
     it('shall apply global styles', async () => {
       // define global style
       const style = document.createElement('style')

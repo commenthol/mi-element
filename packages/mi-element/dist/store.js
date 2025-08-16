@@ -1,4 +1,4 @@
-import { State } from './signal.js';
+import { State } from 'mi-signal';
 
 class Store extends State {
   constructor(actions, initialValue, options) {
