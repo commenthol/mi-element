@@ -54,7 +54,7 @@
     "setup": "pnpm exec playwright install"
   },
   "dependencies": {
-    "mi-signal": "workspace:",
+    "mi-signal": "workspace:^0.5.0",
     "uhtml": "^4.7.1"
   },
   "devDependencies": {
