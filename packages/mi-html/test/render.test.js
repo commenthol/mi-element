@@ -77,4 +77,11 @@ describe('html', () => {
     div.dispatchEvent(new Event('click'))
     expect(div.textContent).toBe('2')
   })
+
+  it('shall return ref', () => {
+    let ref = {}
+    render(body, html`<div ref=${ref}></div>`)
+    ref.current.textContent = 'Hi'
+    expect(body.querySelector('div').textContent).toBe('Hi')
+  })
 })

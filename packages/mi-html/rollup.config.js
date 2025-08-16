@@ -46,7 +46,7 @@ const tasks = [
       }
     ],
     plugins: [
-      nodeResolve({ resolveOnly: ['uhtml'] }),
+      nodeResolve(),
       terser({ ...terserOptsDeadCode })
     ]
   }
