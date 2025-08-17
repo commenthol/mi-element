@@ -75,14 +75,49 @@ export class MiElement extends HTMLElement {
    */
   static template
 
+  // /**
+  //  * observable attributes
+  //  * @returns {Record<string, any>|{}}
+  //  */
+  // static get attributes() {
+  //   return {}
+  // }
+  // /**
+  //  * observable properties
+  //  * @returns {Record<string, any>|{}}
+  //  */
+  // static get properties() {
+  //   return {}
+  // }
+
   constructor() {
     super()
     // @ts-expect-error
     this.#observedAttributes(this.constructor.attributes)
+    // @ts-expect-error
+    this.#observedProperties(this.constructor.properties)
+  }
+
+  #observe(name, initialValue) {
+    this.#attr[name] = createSignal(initialValue)
+    Object.defineProperty(this, name, {
+      enumerable: true,
+      get() {
+        return this.#attr[name].get()
+      },
+      set(newValue) {
+        const oldValue = this.#attr[name].get()
+        if (oldValue === newValue) return
+        this.#attr[name].set(newValue)
+        this.#changedAttr[name] = oldValue
+        this.requestUpdate()
+      }
+    })
   }
 
   /**
    * requests update on component when property changes
+   * @param {Record<string, any>} [attributes]
    */
   #observedAttributes(attributes = {}) {
     for (const [name, value] of Object.entries(attributes)) {
@@ -90,20 +125,20 @@ export class MiElement extends HTMLElement {
       this.#types.set(name, initial.type)
       this.#attrLc.set(name.toLowerCase(), name)
       this.#attrLc.set(camelToKebabCase(name), name)
-      this.#attr[name] = createSignal(initial.value)
-      Object.defineProperty(this, name, {
-        enumerable: true,
-        get() {
-          return this.#attr[name].get()
-        },
-        set(newValue) {
-          const oldValue = this.#attr[name].get()
-          if (oldValue === newValue) return
-          this.#attr[name].set(newValue)
-          this.#changedAttr[name] = oldValue
-          this.requestUpdate()
-        }
-      })
+      this.#observe(name, initial.value)
+    }
+  }
+
+  /**
+   * define (direct) properties
+   * @param {Record<string, any>} [properties]
+   */
+  #observedProperties(properties = {}) {
+    for (const [name, value] of Object.entries(properties)) {
+      if (this.#attrLc.has(name) || name in this.#attr) {
+        continue
+      }
+      this.#observe(name, value)
     }
   }
 

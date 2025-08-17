@@ -14,25 +14,30 @@ class MiElement extends HTMLElement {
   };
   static template;
   constructor() {
-    super(), this.#observedAttributes(this.constructor.attributes);
+    super(), this.#observedAttributes(this.constructor.attributes), this.#observedProperties(this.constructor.properties);
+  }
+  #observe(name, initialValue) {
+    this.#attr[name] = createSignal(initialValue), Object.defineProperty(this, name, {
+      enumerable: !0,
+      get() {
+        return this.#attr[name].get();
+      },
+      set(newValue) {
+        const oldValue = this.#attr[name].get();
+        oldValue !== newValue && (this.#attr[name].set(newValue), this.#changedAttr[name] = oldValue, 
+        this.requestUpdate());
+      }
+    });
   }
   #observedAttributes(attributes = {}) {
     for (const [name, value] of Object.entries(attributes)) {
       const initial = initialValueType(value);
       this.#types.set(name, initial.type), this.#attrLc.set(name.toLowerCase(), name), 
-      this.#attrLc.set(camelToKebabCase(name), name), this.#attr[name] = createSignal(initial.value), 
-      Object.defineProperty(this, name, {
-        enumerable: !0,
-        get() {
-          return this.#attr[name].get();
-        },
-        set(newValue) {
-          const oldValue = this.#attr[name].get();
-          oldValue !== newValue && (this.#attr[name].set(newValue), this.#changedAttr[name] = oldValue, 
-          this.requestUpdate());
-        }
-      });
+      this.#attrLc.set(camelToKebabCase(name), name), this.#observe(name, initial.value);
     }
+  }
+  #observedProperties(properties = {}) {
+    for (const [name, value] of Object.entries(properties)) this.#attrLc.has(name) || name in this.#attr || this.#observe(name, value);
   }
   #getName(name) {
     return this.#attrLc.get(name) || name;

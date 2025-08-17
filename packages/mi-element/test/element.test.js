@@ -249,6 +249,63 @@ describe('MiElement', () => {
     })
   })
 
+  describe('properties', () => {
+    const attributes = {
+      text: 'Hi'
+    }
+    const properties = {
+      text: 'Hey',
+      num: 0,
+      str: 'foo',
+      bool: true
+    }
+    let previousAttrs = null
+
+    class MiTest extends MiElement {
+      static get attributes() {
+        return attributes
+      }
+      static get properties() {
+        return properties
+      }
+
+      static template = `<pre></pre>`
+
+      render() {
+        this.refs = refsBySelector(this.renderRoot, { pre: 'pre' })
+      }
+
+      update(changedAttributes) {
+        this.refs.pre.textContent = JSON.stringify(this, null, 2)
+        previousAttrs = { ...previousAttrs, ...changedAttributes }
+        console.debug('update', previousAttrs)
+      }
+    }
+
+    const tag = 'mi-test-properties'
+    define(tag, MiTest)
+    let el
+
+    beforeEach(() => {
+      previousAttrs = null
+      document.body.innerHTML = null
+      el = document.createElement(tag)
+      document.body.appendChild(el)
+    })
+
+    it('shall assign default properties', async () => {
+      const collect = Object.keys(properties).reduce((acc, name) => {
+        acc[name] = el[name]
+        return acc
+      }, {})
+      assert.deepStrictEqual(collect, {
+        ...properties,
+        text: 'Hi' // do not overwrite attributes!
+      })
+      await nap()
+    })
+  })
+
   describe('controller', () => {
     let events = []
 
