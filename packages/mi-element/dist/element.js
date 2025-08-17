@@ -12,6 +12,7 @@ class MiElement extends HTMLElement {
   static shadowRootOptions={
     mode: 'open'
   };
+  static template;
   constructor() {
     super(), this.#observedAttributes(this.constructor.attributes);
   }
@@ -69,7 +70,8 @@ class MiElement extends HTMLElement {
     }));
   }
   addTemplate(template) {
-    template instanceof HTMLTemplateElement ? this.renderRoot.append(template.content.cloneNode(!0)) : console.warn('template is not a HTMLTemplateElement');
+    if (!(template instanceof HTMLTemplateElement)) throw new Error('template is not a HTMLTemplateElement');
+    this.renderRoot.append(template.content.cloneNode(!0));
   }
   render() {}
   update(_changedAttributes) {}
@@ -99,7 +101,7 @@ const define = (name, element, options) => {
   element.observedAttributes = (element.observedAttributes || Object.keys(element.attributes || [])).map((attr => attr.toLowerCase())), 
   renderTemplate(element), window.customElements.define(name, element, options);
 }, renderTemplate = element => {
-  if ('string' != typeof element.template) return;
+  if (element.template instanceof HTMLTemplateElement) return;
   const el = document.createElement('template');
   el.innerHTML = element.template, element.template = el;
 }, initialValueType = value => {

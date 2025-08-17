@@ -10,8 +10,8 @@
 * [render()](#render)
 * [update(changedAttributes)](#updatechangedattributes)
 * [shouldUpdate(changedAttributes)](#shouldupdatechangedattributes)
-* [on(eventName, listener, \[node])](#oneventname-listener-node)
-* [once(eventName, listener, \[node])](#onceeventname-listener-node)
+* [on(eventName, listener, \[node\])](#oneventname-listener-node)
+* [once(eventName, listener, \[node\])](#onceeventname-listener-node)
 
 <!-- toc! -->
 

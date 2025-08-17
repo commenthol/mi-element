@@ -49,6 +49,11 @@ export class MiElement extends HTMLElement {
         mode: string;
     };
     /**
+     * defines template for render().
+     * @type {String|HTMLTemplateElement}
+     */
+    static template: string | HTMLTemplateElement;
+    /**
      * creates the element's renderRoot, sets up styling
      * @category lifecycle
      */

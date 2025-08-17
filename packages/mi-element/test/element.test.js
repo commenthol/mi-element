@@ -1,8 +1,86 @@
-import { expect, describe, it, beforeEach } from 'vitest'
-import { define, MiElement, refsBySelector } from '../src/index.js'
+import { assert, describe, it, beforeEach } from 'vitest'
+import { define, MiElement, refsBySelector, html } from '../src/index.js'
 import { nap } from './helpers.js'
 
 describe('MiElement', () => {
+  describe('template', () => {
+    beforeEach(() => {
+      document.body.innerHTML = null
+    })
+
+    it('no template', () => {
+      const tag = 'mi-test-template-no'
+      class MiTest extends MiElement {
+        static shadowRootOptions = null
+      }
+      assert.strictEqual(toString.call(MiTest.template), '[object Undefined]')
+      define(tag, MiTest)
+      const el = document.createElement(tag)
+      document.body.appendChild(el)
+      // mutates the template to HTMLTemplateElement
+      assert.strictEqual(
+        toString.call(MiTest.template),
+        '[object HTMLTemplateElement]'
+      )
+    })
+
+    it('shall transform template from string', () => {
+      const tag = 'mi-test-template-str'
+      class MiTest extends MiElement {
+        static shadowRootOptions = null
+        static template = '<h1>string</h1>'
+      }
+      assert.strictEqual(toString.call(MiTest.template), '[object String]')
+      define(tag, MiTest)
+      const el = document.createElement(tag)
+      document.body.appendChild(el)
+      assert.strictEqual(el.innerHTML, '<h1>string</h1>')
+      // mutates the template to HTMLTemplateElement
+      assert.strictEqual(
+        toString.call(MiTest.template),
+        '[object HTMLTemplateElement]'
+      )
+    })
+
+    it('shall transform template from escaped string', () => {
+      const tag = 'mi-test-template-esc'
+      class MiTest extends MiElement {
+        static shadowRootOptions = null
+        static template = html`<h1>${'escaped>'}</h1>`
+      }
+      define(tag, MiTest)
+      const el = document.createElement(tag)
+      document.body.appendChild(el)
+      assert.strictEqual(el.innerHTML, '<h1>escaped&gt;</h1>')
+    })
+
+    it('shall not transform template if already a HTMLTemplateElement', () => {
+      const template = document.createElement('template')
+      template.innerHTML = `<h1>template</h1>`
+      const tag = 'mi-test-template'
+      class MiTest extends MiElement {
+        static shadowRootOptions = null
+        static template = template
+      }
+      define(tag, MiTest)
+      const el = document.createElement(tag)
+      document.body.appendChild(el)
+      assert.strictEqual(el.innerHTML, '<h1>template</h1>')
+    })
+
+    it('shall throw if addTemplate is not HTMLTemplateElement', () => {
+      const tag = 'mi-test-template-add-template-fail'
+      class MiTest extends MiElement {
+        static shadowRootOptions = null
+      }
+      define(tag, MiTest)
+      assert.throws(() => {
+        const el = document.createElement(tag)
+        el.addTemplate('huu')
+      }, 'template is not a HTMLTemplateElement')
+    })
+  })
+
   describe('attributes', () => {
     const attributes = {
       empty: '',
@@ -40,7 +118,7 @@ describe('MiElement', () => {
       update(changedAttributes) {
         this.refs.pre.textContent = JSON.stringify(this, null, 2)
         previousAttrs = { ...previousAttrs, ...changedAttributes }
-        console.debug('update', previousAttrs)
+        // console.debug('update', previousAttrs)
       }
     }
 
@@ -60,7 +138,7 @@ describe('MiElement', () => {
         acc[name] = el[name]
         return acc
       }, {})
-      expect(collect).toStrictEqual({
+      assert.deepStrictEqual(collect, {
         ...attributes,
         undefBoolean: undefined,
         undefNumber: undefined,
@@ -91,7 +169,7 @@ describe('MiElement', () => {
       // just stringified, which is not what we intent. Such MiElement hides
       // these values from being set as attribute.
       // `null` means that no attribute was set on the node
-      expect(collectAttrs).toStrictEqual({
+      assert.deepStrictEqual(collectAttrs, {
         array: null,
         empty: '',
         false: null,
@@ -111,7 +189,7 @@ describe('MiElement', () => {
       }, {})
 
       // console.log(collectProps)
-      expect(collectProps).toStrictEqual({
+      assert.deepStrictEqual(collectProps, {
         array: [1, 2, 'hi'],
         camelCase: '',
         empty: '',
@@ -141,20 +219,20 @@ describe('MiElement', () => {
       el = div.querySelector('mi-test-attributes')
       document.body.appendChild(el)
       await nap(100)
-      expect(el.true).toBe(false)
-      expect(el.false).toBe(true)
+      assert.strictEqual(el.true, false)
+      assert.strictEqual(el.false, true)
       // attribute true gets removed!
-      expect(el.getAttribute('true')).toEqual(null)
-      expect(el.getAttribute('false')).toEqual('')
+      assert.strictEqual(el.getAttribute('true'), null)
+      assert.strictEqual(el.getAttribute('false'), '')
       await nap()
     })
 
     it('shall resolve camelCased attributes', async () => {
       const camels = '🐪🐫'
       el.setAttribute('camelcase', camels)
-      expect(el.camelCase).toBe(camels)
-      expect(el.getAttribute('camelcase')).toBe(camels)
-      expect(el.getAttribute('camelCase')).toBe(camels)
+      assert.strictEqual(el.camelCase, camels)
+      assert.strictEqual(el.getAttribute('camelcase'), camels)
+      assert.strictEqual(el.getAttribute('camelCase'), camels)
       await nap()
     })
 
@@ -164,7 +242,7 @@ describe('MiElement', () => {
       el.setAttribute('cantset', '❌')
       el.number = 42
       await nap()
-      expect(previousAttrs).toStrictEqual({
+      assert.deepStrictEqual(previousAttrs, {
         camelCase: '',
         number: 1
       })
@@ -222,7 +300,7 @@ describe('MiElement', () => {
       await nap(50)
       document.body.innerHTML = null
       // console.log(events)
-      expect(events).toStrictEqual([
+      assert.deepStrictEqual(events, [
         'hostConnected',
         1,
         'change',
@@ -274,7 +352,7 @@ describe('MiElement', () => {
       await nap()
       document.body.innerHTML = null
       el.dispatchEvent(new MyEvent('my-on'))
-      expect(events).toEqual(['my-on', 'my-once', 'my-on'])
+      assert.deepStrictEqual(events, ['my-on', 'my-once', 'my-on'])
       await nap()
     })
   })
@@ -297,11 +375,11 @@ describe('MiElement', () => {
       el.dispose(() => {
         events.push('disposed')
       })
-      expect(events).toEqual([])
+      assert.deepStrictEqual(events, [])
       // call disconnectedCallback
       document.body.innerHTML = null
       await nap()
-      expect(events).toEqual(['disposed'])
+      assert.deepStrictEqual(events, ['disposed'])
       await nap()
     })
 
@@ -310,7 +388,7 @@ describe('MiElement', () => {
         el.dispose('boo')
         throw new Error()
       } catch (err) {
-        expect(err.message).toBe('listener must be a function')
+        assert.strictEqual(err.message, 'listener must be a function')
       }
     })
   })

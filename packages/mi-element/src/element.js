@@ -69,6 +69,12 @@ export class MiElement extends HTMLElement {
    */
   static shadowRootOptions = { mode: 'open' }
 
+  /**
+   * defines template for render().
+   * @type {String|HTMLTemplateElement}
+   */
+  static template
+
   constructor() {
     super()
     // @ts-expect-error
@@ -220,8 +226,7 @@ export class MiElement extends HTMLElement {
    */
   addTemplate(template) {
     if (!(template instanceof HTMLTemplateElement)) {
-      console.warn('template is not a HTMLTemplateElement')
-      return
+      throw new Error('template is not a HTMLTemplateElement')
     }
     this.renderRoot.append(template.content.cloneNode(true))
   }
@@ -322,8 +327,12 @@ export const define = (name, element, options) => {
 
 // --- utils
 
+/**
+ * convert (and cache) the static template to HTMLTemplateElement
+ * @param {typeof MiElement} element
+ */
 const renderTemplate = (element) => {
-  if (typeof element.template !== 'string') {
+  if (element.template instanceof HTMLTemplateElement) {
     return
   }
   const el = document.createElement('template')
