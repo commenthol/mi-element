@@ -6,8 +6,8 @@ const unsafeHtml = str => new UnsafeHtml(str), escMap = {
   '>': '&gt;',
   "'": '&#39;',
   '"': '&quot;'
-}, escHtml = string => string instanceof UnsafeHtml ? string : ('' + string).replace(/&amp;/g, '&').replace(/[&<>'"]/g, (tag => escMap[tag])), html = (strings, ...vars) => unsafeHtml(String.raw({
+}, escHtml = string => string instanceof UnsafeHtml ? string : ('' + string).replace(/&amp;/g, '&').replace(/[&<>'"]/g, (tag => escMap[tag])), esc = (strings, ...vars) => unsafeHtml(String.raw({
   raw: strings
 }, ...vars.map(escHtml)));
 
-export { escHtml, html, unsafeHtml };
+export { esc, escHtml, unsafeHtml };

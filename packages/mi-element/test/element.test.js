@@ -1,5 +1,5 @@
 import { assert, describe, it, beforeEach } from 'vitest'
-import { define, MiElement, refsBySelector, html } from '../src/index.js'
+import { define, MiElement, refsBySelector, esc as html } from '../src/index.js'
 import { nap } from './helpers.js'
 
 describe('MiElement', () => {

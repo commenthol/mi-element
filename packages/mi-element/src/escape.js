@@ -38,5 +38,5 @@ export const escHtml = (string) =>
  * @param  {...any} vars
  * @returns {string}
  */
-export const html = (strings, ...vars) =>
+export const esc = (strings, ...vars) =>
   unsafeHtml(String.raw({ raw: strings }, ...vars.map(escHtml)))

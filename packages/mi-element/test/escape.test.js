@@ -1,5 +1,5 @@
 import { expect, describe, it } from 'vitest'
-import { unsafeHtml, html, escHtml } from '../src/escape.js'
+import { unsafeHtml, esc as html, escHtml } from '../src/escape.js'
 
 describe('escape', function () {
   it('shall escape html', () => {
