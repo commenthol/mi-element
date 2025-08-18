@@ -11,11 +11,17 @@
   "author": "commenthol <commenthol@gmail.com>",
   "type": "module",
   "scripts": {
-    "lint": "pnpm -r run lint",
+    "all": "pnpm -r run all",
     "f": "pnpm --filter \"./packages/*\" -r",
-    "test": "pnpm -r run test"
+    "lint": "pnpm -r run lint",
+    "test": "pnpm -r run test",
+    "version": "./run.sh version"
   },
   "engines": {
-    "node": ">=20.0.0"
+    "node": ">=20.0.0",
+    "pnpm": ">=10"
+  },
+  "devDependencies": {
+    "versionn": "^1.1.1"
   }
 }
