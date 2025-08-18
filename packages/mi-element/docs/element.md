@@ -2,7 +2,7 @@
 
 <!-- !toc (minlevel=2) -->
 
-* [constructor()](#constructor-function Object() { [native code] })
+* [constructor()](#constructor)
 * [connectedCallback()](#connectedcallback)
 * [disconnectedCallback()](#disconnectedcallback)
 * [attributeChangedCallback(name, oldValue, newValue)](#attributechangedcallbackname-oldvalue-newvalue)
@@ -28,6 +28,9 @@ from the `static attributes` object. From there setters and getters for property
 changes using `.[name] = newValue` instead of `setAttribute(name, newValue)` are
 applied.
 
+Direct properties can also made observable with `static properties` as long as
+not yet being defined within attributes.
+
 ```js
 class extends MiElement {
   /**
@@ -37,8 +40,8 @@ class extends MiElement {
    * copy.
    * 
    * For yet to defined numbers, boolean or strings use `Number`, `Boolean`, 
-   * `String` attributes are accessible via `this[prop]`.
-   * Avoid using attributes which are HTMLElement properties e.g. className
+   * `String`. Attributes are accessible via `.[name]` or `.getAttribute(name)`.
+   * Avoid using attributes which are HTMLElement properties e.g. `className`.
    */
   static get attributes () {
     return {
@@ -47,7 +50,17 @@ class extends MiElement {
       focus: Boolean
     }
   }
-
+  /**
+   * Declare observable properties and their default values.
+   * Any changed value of a property, using `.[name] = nextValue` assignment, 
+   * will cause a rerender. 
+   * In case of objects or arrays consider changing the reference with the 
+   * spread operator like `{...obj}` or `[...arr]` creating a new reference.
+   * If name is already declared in `attributes` it will be ignored. 
+   */
+  static get properties () {
+    return { prop: 0 }
+  }
   constructor() {
     super()
     // optionally declare "non observable" and internal properties
