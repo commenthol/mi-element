@@ -42,7 +42,7 @@ function effect(cb) {
 class Computed {
   #state;
   constructor(cb) {
-    this.#state = new State, effect((() => this.#state.set(cb())));
+    this.#state = new State, effect(() => this.#state.set(cb()));
   }
   get() {
     return this.#state.get();

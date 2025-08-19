@@ -13,6 +13,12 @@ class MiElement extends HTMLElement {
     mode: 'open'
   };
   static template;
+  static get attributes() {
+    return {};
+  }
+  static get properties() {
+    return {};
+  }
   constructor() {
     super(), this.#observedAttributes(this.constructor.attributes), this.#observedProperties(this.constructor.properties);
   }
@@ -46,13 +52,13 @@ class MiElement extends HTMLElement {
     return this.#types.get(name);
   }
   connectedCallback() {
-    this.#controllers.forEach((controller => controller.hostConnected?.()));
+    this.#controllers.forEach(controller => controller.hostConnected?.());
     const {shadowRootOptions: shadowRootOptions, template: template} = this.constructor;
     this.renderRoot = shadowRootOptions ? this.shadowRoot ?? this.attachShadow(shadowRootOptions) : this, 
     this.addTemplate(template), this.render(), this.requestUpdate();
   }
   disconnectedCallback() {
-    this.#disposers.forEach((remover => remover())), this.#controllers.forEach((controller => controller.hostDisconnected?.()));
+    this.#disposers.forEach(remover => remover()), this.#controllers.forEach(controller => controller.hostDisconnected?.());
   }
   attributeChangedCallback(name, oldValue, newValue) {
     const attr = this.#getName(name), type = this.#getType(attr);
@@ -70,9 +76,9 @@ class MiElement extends HTMLElement {
     return !0;
   }
   requestUpdate() {
-    this.isConnected && requestAnimationFrame((() => {
+    this.isConnected && requestAnimationFrame(() => {
       this.shouldUpdate(this.#changedAttr) && this.update(this.#changedAttr), this.#changedAttr = {};
-    }));
+    });
   }
   addTemplate(template) {
     if (!(template instanceof HTMLTemplateElement)) throw new Error('template is not a HTMLTemplateElement');
@@ -81,7 +87,7 @@ class MiElement extends HTMLElement {
   render() {}
   update(_changedAttributes) {}
   on(eventName, listener, node = this) {
-    node.addEventListener(eventName, listener), this.#disposers.add((() => node.removeEventListener(eventName, listener)));
+    node.addEventListener(eventName, listener), this.#disposers.add(() => node.removeEventListener(eventName, listener));
   }
   once(eventName, listener, node = this) {
     node.addEventListener(eventName, listener, {
@@ -103,7 +109,7 @@ class MiElement extends HTMLElement {
 }
 
 const define = (name, element, options) => {
-  element.observedAttributes = (element.observedAttributes || Object.keys(element.attributes || [])).map((attr => attr.toLowerCase())), 
+  element.observedAttributes = (element.observedAttributes || Object.keys(element.attributes || [])).map(attr => attr.toLowerCase()), 
   renderTemplate(element), window.customElements.define(name, element, options);
 }, renderTemplate = element => {
   if (element.template instanceof HTMLTemplateElement) return;

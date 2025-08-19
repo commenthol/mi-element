@@ -17,10 +17,10 @@ const classMap = map => {
 let globalSheets = null;
 
 function addGlobalStyles(renderRoot) {
-  renderRoot.adoptedStyleSheets.push(...(null === globalSheets && (globalSheets = Array.from(document.styleSheets).map((({cssRules: cssRules}) => {
-    const sheet = new CSSStyleSheet, css = Array.from(cssRules).map((rule => rule.cssText)).join(' ');
+  renderRoot.adoptedStyleSheets.push(...(null === globalSheets && (globalSheets = Array.from(document.styleSheets).map(({cssRules: cssRules}) => {
+    const sheet = new CSSStyleSheet, css = Array.from(cssRules).map(rule => rule.cssText).join(' ');
     return sheet.replaceSync(css), sheet;
-  }))), globalSheets));
+  })), globalSheets));
 }
 
 export { addGlobalStyles, classMap, styleMap };

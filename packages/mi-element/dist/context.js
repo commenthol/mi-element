@@ -20,10 +20,10 @@ class ContextProvider {
   onContextRequest=ev => {
     if (ev.context !== this.context) return;
     let unsubscribe;
-    ev.stopPropagation(), ev.subscribe && (unsubscribe = effect((() => {
+    ev.stopPropagation(), ev.subscribe && (unsubscribe = effect(() => {
       const value = this.get();
       unsubscribe && ev.callback(value, unsubscribe);
-    }))), ev.callback(this.get(), unsubscribe);
+    })), ev.callback(this.get(), unsubscribe);
   };
 }
 
