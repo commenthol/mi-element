@@ -66,6 +66,7 @@ export class MiElement extends HTMLElement {
    * Default options used when calling `attachShadow`. Used in
    * `connectedCallback()`.
    * If override is `null`, no shadow-root will be attached.
+   * @type {{mode: string}|null}
    */
   static shadowRootOptions = { mode: 'open' }
 
@@ -75,20 +76,20 @@ export class MiElement extends HTMLElement {
    */
   static template
 
-  // /**
-  //  * observable attributes
-  //  * @returns {Record<string, any>|{}}
-  //  */
-  // static get attributes() {
-  //   return {}
-  // }
-  // /**
-  //  * observable properties
-  //  * @returns {Record<string, any>|{}}
-  //  */
-  // static get properties() {
-  //   return {}
-  // }
+  /**
+   * observable attributes
+   * @returns {Record<string, any>|{}}
+   */
+  static get attributes() {
+    return {}
+  }
+  /**
+   * observable properties
+   * @returns {Record<string, any>|{}}
+   */
+  static get properties() {
+    return {}
+  }
 
   constructor() {
     super()

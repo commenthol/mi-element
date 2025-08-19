@@ -44,15 +44,26 @@ export class MiElement extends HTMLElement {
      * Default options used when calling `attachShadow`. Used in
      * `connectedCallback()`.
      * If override is `null`, no shadow-root will be attached.
+     * @type {{mode: string}|null}
      */
     static shadowRootOptions: {
         mode: string;
-    };
+    } | null;
     /**
      * defines template for render().
      * @type {String|HTMLTemplateElement}
      */
     static template: string | HTMLTemplateElement;
+    /**
+     * observable attributes
+     * @returns {Record<string, any>|{}}
+     */
+    static get attributes(): Record<string, any> | {};
+    /**
+     * observable properties
+     * @returns {Record<string, any>|{}}
+     */
+    static get properties(): Record<string, any> | {};
     /**
      * creates the element's renderRoot, sets up styling
      * @category lifecycle

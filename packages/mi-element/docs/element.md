@@ -372,7 +372,7 @@ whether `update()` should be called or not.
 
 Return `true` if component should be updated. 
 
-## on(eventName, listener, \[node])
+## on(eventName, listener, \[node\])
 
 Adds listener function for eventName. listener is removed before component
 disconnects.
@@ -388,7 +388,7 @@ class Router extends MiElement {
 }
 ```
 
-## once(eventName, listener, \[node])
+## once(eventName, listener, \[node\])
 
 Adds one-time listener function for eventName. The next time eventName is
 triggered, this listener is removed and then invoked.
