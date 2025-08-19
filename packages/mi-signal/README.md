@@ -1,3 +1,6 @@
+[![npm-badge][npm-badge]][npm]
+![types-badge][types-badge]
+
 # mi-signal
 
 > Signal for reactive behavior
@@ -182,3 +185,7 @@ MIT licensed
 
 [TC39 JavaScript Signals standard proposal]: https://github.com/tc39/proposal-signals
 [mi-element]: https://github.com/commenthol/mi-element/tree/main/packages/mi-element
+
+[npm-badge]: https://badgen.net/npm/v/mi-signal
+[npm]: https://www.npmjs.com/package/mi-signal
+[types-badge]: https://badgen.net/npm/types/mi-signal

@@ -1,3 +1,6 @@
+[![npm-badge][npm-badge]][npm]
+![types-badge][types-badge]
+
 # mi-element
 
 > a lightweight alternative to write web components
@@ -111,3 +114,7 @@ MIT licensed
 [Web Components]: https://developer.mozilla.org/en-US/docs/Web/API/Web_components/Using_custom_elements#custom_element_lifecycle_callbacks
 [TC39 JavaScript Signals standard proposal]: https://github.com/tc39/proposal-signals
 [krausest/js-framework-benchmark]: https://github.com/krausest/js-framework-benchmark
+
+[npm-badge]: https://badgen.net/npm/v/mi-element
+[npm]: https://www.npmjs.com/package/mi-element
+[types-badge]: https://badgen.net/npm/types/mi-element

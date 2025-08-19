@@ -1,3 +1,6 @@
+[![npm-badge][npm-badge]][npm]
+![types-badge][types-badge]
+
 # mi-html
 
 > html template literal for building reactive web components
@@ -358,3 +361,7 @@ MIT licensed
 
 [uhtml@4]: https://github.com/WebReflection/uhtml/tree/v4
 [mi-element]: https://github.com/commenthol/mi-element/tree/main/packages/mi-element
+
+[npm-badge]: https://badgen.net/npm/v/mi-html
+[npm]: https://www.npmjs.com/package/mi-html
+[types-badge]: https://badgen.net/npm/types/mi-html
