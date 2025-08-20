@@ -56,6 +56,7 @@ export class Computed<T> {
      * @returns {T}
      */
     get<T_1>(): T_1;
+    unsubscribe(): void;
     #private;
 }
 declare namespace _default {

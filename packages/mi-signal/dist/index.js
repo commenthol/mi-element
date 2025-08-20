@@ -41,11 +41,15 @@ function effect(cb) {
 
 class Computed {
   #state;
+  #unsubscribe;
   constructor(cb) {
-    this.#state = new State, effect(() => this.#state.set(cb()));
+    this.#state = new State, this.#unsubscribe = effect(() => this.#state.set(cb()));
   }
   get() {
     return this.#state.get();
+  }
+  unsubscribe() {
+    this.#unsubscribe();
   }
 }
 

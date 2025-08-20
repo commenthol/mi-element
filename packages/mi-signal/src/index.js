@@ -118,13 +118,14 @@ export function effect(cb) {
  */
 export class Computed {
   #state
+  #unsubscribe
 
   /**
    * @param {() => T} cb
    */
   constructor(cb) {
     this.#state = new State()
-    effect(() => this.#state.set(cb()))
+    this.#unsubscribe = effect(() => this.#state.set(cb()))
   }
 
   /**
@@ -133,6 +134,10 @@ export class Computed {
    */
   get() {
     return this.#state.get()
+  }
+
+  unsubscribe() {
+    this.#unsubscribe()
   }
 }
 

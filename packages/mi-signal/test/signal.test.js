@@ -99,6 +99,10 @@ describe('signal', () => {
     })
     firstName.set('Alice')
     lastName.set('Wonderland')
-    expect(events).toEqual(['Joe Doe', 'Alice Doe', 'Alice Wonderland'])
+    const expected = ['Joe Doe', 'Alice Doe', 'Alice Wonderland']
+    expect(events).toEqual(expected)
+    name.unsubscribe()
+    firstName.set('Bob')
+    expect(events).toEqual(expected)
   })
 })
