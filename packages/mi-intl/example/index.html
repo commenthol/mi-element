@@ -1,0 +1,44 @@
+<!doctype html>
+<html dir="ltr" lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>mi-intl Examples</title>
+    <meta name="Description" content="mi-intl Example" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=5.0"
+    />
+    <style>
+      .mt-4 {
+        margin-top: calc(0.25rem * 4);
+      }
+    </style>
+  </head>
+
+  <body>
+    <mi-intl-provider
+      supportedLngs="en,es,fr"
+      localesPath="/example/{lng}.json"
+    >
+      <h1>mi-intl <mi-message label="example"></mi-message></h1>
+
+      <mi-lang-select></mi-lang-select>
+
+      <mi-loading class="mt-4">
+        <!-- <div slot="loading">Loading ...</div> -->
+        <div id="msg">
+          <mi-message label="Hello {value}" value="World"></mi-message>
+          <br />
+          <mi-message
+            label="{value, plural, =0 {no Person} =1 {one Person} other {# Persons}}"
+            value='{"value": 1}'
+          ></mi-message>
+          <hr />
+        </div>
+      </mi-loading>
+
+    </mi-intl-provider>
+    <script type="module" src="./app.js"></script>
+    </script>
+  </body>
+</html>

@@ -1,0 +1,7 @@
+{
+  "example": "ejemplo",
+  "loading": "cargando...",
+  "Hello {value}": "Hola {value}",
+  "{value, plural, =0 {no Person} =1 {one Person} other {# Persons}}": "{value, plural, =0 {ninguna persona} =1 {una persona} other {# personas}}",
+  "persons": "{value, plural, =0 {<u>ninguna</u> persona} =1 {<i>una</i> persona} other {<b>#</b> personas}}"
+}

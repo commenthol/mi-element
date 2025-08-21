@@ -1,0 +1,7 @@
+{
+  "example": "example",
+  "loading": "loading...",
+  "Hello {value}": "Hello {value}",
+  "{value, plural, =0 {no Person} =1 {one Person} other {# Persons}}": "{value, plural, =0 {no Person} =1 {one Person} other {# Persons}}",
+  "persons": "{value, plural, =0 {<u>no</u> Person} =1 {<i>one</i> Person} other {<b>#</b> Persons}}"
+}

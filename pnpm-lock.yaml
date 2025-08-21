@@ -134,6 +134,64 @@ importers:
         specifier: ^3.2.4
         version: 3.2.4(@types/node@24.3.0)(@vitest/browser@3.2.4)(msw@2.10.4(@types/node@24.3.0)(typescript@5.9.2))(terser@5.43.1)
 
+  packages/mi-intl:
+    dependencies:
+      intl-messageformat-tiny:
+        specifier: ^1.1.0
+        version: 1.1.0
+      mi-element:
+        specifier: workspace:*
+        version: link:../mi-element
+    devDependencies:
+      '@eslint/js':
+        specifier: ^9.33.0
+        version: 9.33.0
+      '@rollup/plugin-terser':
+        specifier: ^0.4.4
+        version: 0.4.4(rollup@4.46.3)
+      '@testing-library/dom':
+        specifier: ^10.4.1
+        version: 10.4.1
+      '@types/node':
+        specifier: ^24.3.0
+        version: 24.3.0
+      '@vitest/browser':
+        specifier: ^3.2.4
+        version: 3.2.4(msw@2.10.4(@types/node@24.3.0)(typescript@5.9.2))(playwright@1.54.2)(vite@7.1.2(@types/node@24.3.0)(terser@5.43.1))(vitest@3.2.4)
+      '@vitest/coverage-istanbul':
+        specifier: ^3.2.4
+        version: 3.2.4(vitest@3.2.4)
+      eslint:
+        specifier: ^9.33.0
+        version: 9.33.0
+      globals:
+        specifier: ^16.3.0
+        version: 16.3.0
+      npm-run-all2:
+        specifier: ^8.0.4
+        version: 8.0.4
+      playwright:
+        specifier: ^1.54.2
+        version: 1.54.2
+      prettier:
+        specifier: ^3.6.2
+        version: 3.6.2
+      rimraf:
+        specifier: ^6.0.1
+        version: 6.0.1
+      rollup:
+        specifier: ^4.46.3
+        version: 4.46.3
+      typescript:
+        specifier: ^5.9.2
+        version: 5.9.2
+      vite:
+        specifier: ^7.1.2
+        version: 7.1.2(@types/node@24.3.0)(terser@5.43.1)
+      vitest:
+        specifier: ^3.2.4
+        version: 3.2.4(@types/node@24.3.0)(@vitest/browser@3.2.4)(msw@2.10.4(@types/node@24.3.0)(typescript@5.9.2))(terser@5.43.1)
+
   packages/mi-signal:
     devDependencies:
       '@eslint/js':
@@ -178,9 +236,6 @@ importers:
       typescript:
         specifier: ^5.9.2
         version: 5.9.2
-      uhtml:
-        specifier: ^5.0.9
-        version: 5.0.9
       vite:
         specifier: ^7.1.2
         version: 7.1.2(@types/node@24.3.0)(terser@5.43.1)
@@ -795,9 +850,6 @@ packages:
   '@vitest/utils@3.2.4':
     resolution: {integrity: sha512-fB2V0JFrQSMsCo9HiSq3Ezpdv4iYaXRG1Sx8edX3MwxfyNn83mKiGzOcH+Fkxt4MHxr3y42fQi1oeAInqgX2QA==}
 
-  '@webreflection/alien-signals@0.3.2':
-    resolution: {integrity: sha512-DmNjD8Kq5iM+Toirp3llS/izAiI3Dwav5nHRvKdR/YJBTgun3y4xK76rs9CFYD2bZwZJN/rP+HjEqKTteGK+Yw==}
-
   '@webreflection/signal@2.1.2':
     resolution: {integrity: sha512-0dW0fstQQkIt588JwhDiPS4xgeeQcQnBHn6MVInrBzmFlnLtzoSJL9G7JqdAlZVVi19tfb8R1QisZIT31cgiug==}
 
@@ -816,9 +868,6 @@ packages:
 
   ajv@6.12.6:
     resolution: {integrity: sha512-j3fVLgvTo527anyYyJOGTYJbG+vnnQYvE0m5mmkc1TK+nxAppkCLMIL0aZ4dblVCNoGShhm+kzE4ZUykBoMg4g==}
-
-  alien-signals@2.0.6:
-    resolution: {integrity: sha512-P3TxJSe31bUHBiblg59oU1PpaWPtmxF9GhJ/cB7OkgJ0qN/ifFSKUI25/v8ZhsT+lIG6ac8DpTOplXxORX6F3Q==}
 
   ansi-escapes@4.3.2:
     resolution: {integrity: sha512-gKXj5ALrKWQLsYG9jlTRmR/xKluxHV+Z9QEwNIgCfM1/uwPMCuzVVnh5mwTd+OuBZcwSIMbqssNWRm1lE51QaQ==}
@@ -1207,6 +1256,9 @@ packages:
   imurmurhash@0.1.4:
     resolution: {integrity: sha512-JmXMZ6wuvDmLiHEml9ykzqO6lwFbof0GG4IkcGaENdCRDDmMVnny7s5HsIgHCbaq0w2MyPhDqkhTUgS2LU2PHA==}
     engines: {node: '>=0.8.19'}
+
+  intl-messageformat-tiny@1.1.0:
+    resolution: {integrity: sha512-EYWuWo4UD3SW1+WPqRMQoDfHMYbnaXRFuWgw+JPxKQsEX/upeWcZg2tFqsQsX6QcRlRJnx4XnHFs5NcibOI9xQ==}
 
   is-core-module@2.16.1:
     resolution: {integrity: sha512-UfoeMA6fIJ8wTYFEUjelnaGI67v6+N7qXJEvQuIGa99l4xsCruSYOVSQ0uPANn4dAzm8lkYPaKLrrijLq7x23w==}
@@ -1697,9 +1749,6 @@ packages:
 
   uhtml@4.7.1:
     resolution: {integrity: sha512-2Nv8m2WTVBAmep42aYDnMDTRf87yHRWFSif9uEqkCB1fgX85q7rxTXkP6PNINCNUs9/KmQJ+RBgSH1BNZmxEtg==}
-
-  uhtml@5.0.9:
-    resolution: {integrity: sha512-qPyu3vGilaLe6zrjOCD/xezWEHLwdevxmbY3hzyhT25KBDF4F7YYW3YZcL3kylD/6dMoVISHjn8ggV3+9FY+5g==}
 
   undici-types@7.10.0:
     resolution: {integrity: sha512-t5Fy/nfn+14LuOc2KNYg75vZqClpAiqscVvMygNnlsHBFpSXdJaYtXMcdNLpl/Qvc3P2cB3s6lOV51nqsFq4ag==}
@@ -2437,10 +2486,6 @@ snapshots:
       loupe: 3.2.0
       tinyrainbow: 2.0.0
 
-  '@webreflection/alien-signals@0.3.2':
-    dependencies:
-      alien-signals: 2.0.6
-
   '@webreflection/signal@2.1.2':
     optional: true
 
@@ -2460,8 +2505,6 @@ snapshots:
       fast-json-stable-stringify: 2.1.0
       json-schema-traverse: 0.4.1
       uri-js: 4.4.1
-
-  alien-signals@2.0.6: {}
 
   ansi-escapes@4.3.2:
     dependencies:
@@ -2846,6 +2889,8 @@ snapshots:
       resolve-from: 4.0.0
 
   imurmurhash@0.1.4: {}
+
+  intl-messageformat-tiny@1.1.0: {}
 
   is-core-module@2.16.1:
     dependencies:
@@ -3336,10 +3381,6 @@ snapshots:
     optionalDependencies:
       '@preact/signals-core': 1.11.0
       '@webreflection/signal': 2.1.2
-
-  uhtml@5.0.9:
-    dependencies:
-      '@webreflection/alien-signals': 0.3.2
 
   undici-types@7.10.0: {}
 
