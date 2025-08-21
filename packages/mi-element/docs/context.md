@@ -19,7 +19,7 @@ Implements the [Context Protocol][].
 ```js
 import {
   define,
-  MiElement
+  MiElement,
   ContextProvider,
   ContextConsumer,
 } from 'mi-element'

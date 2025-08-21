@@ -78,14 +78,14 @@ export class MiElement extends HTMLElement {
 
   /**
    * observable attributes
-   * @returns {Record<string, any>|{}}
+   * @returns {Record<PropertyKey, unknown>|{}}
    */
   static get attributes() {
     return {}
   }
   /**
    * observable properties
-   * @returns {Record<string, any>|{}}
+   * @returns {Record<PropertyKey, unknown>|{}}
    */
   static get properties() {
     return {}
