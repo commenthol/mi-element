@@ -13,7 +13,7 @@
   "repository": {
     "type": "git",
     "url": "git+https://github.com/commenthol/mi-element.git",
-    "directory": "packages/mi-element"
+    "directory": "packages/mi-html"
   },
   "license": "MIT",
   "author": "commenthol <commenthol@gmail.com>",
