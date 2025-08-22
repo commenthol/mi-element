@@ -56,14 +56,14 @@ export class MiElement extends HTMLElement {
     static template: string | HTMLTemplateElement;
     /**
      * observable attributes
-     * @returns {Record<string, any>|{}}
+     * @returns {Record<PropertyKey, unknown>|{}}
      */
-    static get attributes(): Record<string, any> | {};
+    static get attributes(): Record<PropertyKey, unknown> | {};
     /**
      * observable properties
-     * @returns {Record<string, any>|{}}
+     * @returns {Record<PropertyKey, unknown>|{}}
      */
-    static get properties(): Record<string, any> | {};
+    static get properties(): Record<PropertyKey, unknown> | {};
     /**
      * creates the element's renderRoot, sets up styling
      * @category lifecycle

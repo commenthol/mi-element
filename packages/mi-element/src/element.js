@@ -61,6 +61,7 @@ export class MiElement extends HTMLElement {
   #disposers = new Set()
   #controllers = new Set()
   #changedAttr = {}
+  #dedupe = false
 
   /**
    * Default options used when calling `attachShadow`. Used in
@@ -246,13 +247,16 @@ export class MiElement extends HTMLElement {
    * request rendering
    */
   requestUpdate() {
-    if (!this.isConnected) return
+    if (this.#dedupe || !this.isConnected) return
+    this.#dedupe = true
     requestAnimationFrame(() => {
-      if (this.shouldUpdate(this.#changedAttr)) {
-        this.update(this.#changedAttr)
-      }
+      this.#dedupe = false
       // reset changed attributes
+      const _changedAttributes = this.#changedAttr
       this.#changedAttr = {}
+      if (this.shouldUpdate(_changedAttributes)) {
+        this.update(_changedAttributes)
+      }
     })
   }
 

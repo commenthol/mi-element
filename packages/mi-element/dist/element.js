@@ -9,6 +9,7 @@ class MiElement extends HTMLElement {
   #disposers=new Set;
   #controllers=new Set;
   #changedAttr={};
+  #dedupe=!1;
   static shadowRootOptions={
     mode: 'open'
   };
@@ -76,9 +77,11 @@ class MiElement extends HTMLElement {
     return !0;
   }
   requestUpdate() {
-    this.isConnected && requestAnimationFrame(() => {
-      this.shouldUpdate(this.#changedAttr) && this.update(this.#changedAttr), this.#changedAttr = {};
-    });
+    !this.#dedupe && this.isConnected && (this.#dedupe = !0, requestAnimationFrame(() => {
+      this.#dedupe = !1;
+      const _changedAttributes = this.#changedAttr;
+      this.#changedAttr = {}, this.shouldUpdate(_changedAttributes) && this.update(_changedAttributes);
+    }));
   }
   addTemplate(template) {
     if (!(template instanceof HTMLTemplateElement)) throw new Error('template is not a HTMLTemplateElement');
