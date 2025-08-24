@@ -14,13 +14,14 @@ import { createSignal, effect } from 'mi-signal'
 const CONTEXT_REQUEST = 'context-request'
 
 /**
+ * @template T
  * @implements {HostController}
  */
 export class ContextProvider {
   /**
    * @param {HTMLElement} host
    * @param {Context} context
-   * @param {any} initialValue
+   * @param {T|null} [initialValue]
    */
   constructor(host, context, initialValue) {
     this.host = host
@@ -41,14 +42,14 @@ export class ContextProvider {
   }
 
   /**
-   * @param {any} newValue
+   * @param {T|null|undefined} newValue
    */
   set(newValue) {
     this.state.set(newValue)
   }
 
   /**
-   * @returns {any}
+   * @returns {T|null|undefined}
    */
   get() {
     return this.state.get()
@@ -77,10 +78,13 @@ export class ContextProvider {
   }
 }
 
+/**
+ * @template T
+ */
 export class ContextRequestEvent extends Event {
   /**
    * @param {Context} context
-   * @param {(value: any, unsubscribe?: () => void) => void} callback
+   * @param {(value: T|null|undefined, unsubscribe?: () => void) => void} callback
    * @param {boolean} [subscribe=false] subscribe to value changes
    */
   constructor(context, callback, subscribe) {
@@ -92,9 +96,15 @@ export class ContextRequestEvent extends Event {
 }
 
 /**
+ * @template T
  * @implements {HostController}
  */
 export class ContextConsumer {
+  /**
+   * @type {T|null|undefined}
+   */
+  #value
+
   /**
    * @param {HTMLElement} host
    * @param {Context} context
@@ -108,14 +118,26 @@ export class ContextConsumer {
     this.context = context
     this.subscribe = !!subscribe
     this.validate = validate
-    // initial value yet unknown
-    this.value = undefined
     // unsubscribe function
     this.unsubscribe = undefined
     // add the controller in case of a MiElement otherwise call hostConnected()
     // and hostDisconnected() from the host element
     // @ts-expect-error
     this.host.addController?.(this)
+  }
+
+  /**
+   * @returns {T|null|undefined}
+   */
+  get() {
+    return this.#value
+  }
+
+  /**
+   * @returns {T|null|undefined}
+   */
+  get value() {
+    return this.#value
   }
 
   hostConnected() {
@@ -155,7 +177,7 @@ export class ContextConsumer {
     if (!this.validate(value)) {
       return
     }
-    this.value = value
+    this.#value = value
     // @ts-expect-error
     this.host.requestUpdate()
   }

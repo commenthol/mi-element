@@ -37,10 +37,17 @@ class ContextRequestEvent extends Event {
 }
 
 class ContextConsumer {
+  #value;
   constructor(host, context, options) {
     const {subscribe: subscribe = !1, validate: validate = () => !0} = options || {};
     this.host = host, this.context = context, this.subscribe = !!subscribe, this.validate = validate, 
-    this.value = void 0, this.unsubscribe = void 0, this.host.addController?.(this);
+    this.unsubscribe = void 0, this.host.addController?.(this);
+  }
+  get() {
+    return this.#value;
+  }
+  get value() {
+    return this.#value;
   }
   hostConnected() {
     this.dispatchRequest();
@@ -53,7 +60,7 @@ class ContextConsumer {
   }
   _callback(value, unsubscribe) {
     unsubscribe && (this.subscribe ? this.unsubscribe && (this.unsubscribe !== unsubscribe && this.unsubscribe(), 
-    this.unsubscribe = unsubscribe) : unsubscribe()), this.validate(value) && (this.value = value, 
+    this.unsubscribe = unsubscribe) : unsubscribe()), this.validate(value) && (this.#value = value, 
     this.host.requestUpdate());
   }
 }

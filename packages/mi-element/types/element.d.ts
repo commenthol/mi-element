@@ -143,11 +143,11 @@ export class MiElement extends HTMLElement {
      * @param {HostController} controller
      */
     removeController(controller: HostController): void;
+    /**
+     * properties or attributes
+     */
+    [index: PropertyKey]: any;
     #private;
-  /**
-   * properties or attributes
-   */
-  [index: PropertyKey]: any
 }
 export function define(name: string, element: typeof MiElement, options?: object): void;
 export function convertType(any: any, type: any): any;

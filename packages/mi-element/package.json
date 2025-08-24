@@ -83,7 +83,9 @@
     "test": "vitest run --coverage",
     "test:browser": "vitest --coverage",
     "dev": "npm run test:browser",
-    "types": "tsc",
+    "types": "npm-run-all types:pre types:post",
+    "types:pre": "rimraf types; tsc",
+    "types:post": "node scripts/types.js",
     "setup": "pnpm exec playwright install"
   },
   "dependencies": {

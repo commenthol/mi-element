@@ -1,47 +1,52 @@
 /**
+ * @template T
  * @implements {HostController}
  */
-export class ContextProvider implements HostController {
+export class ContextProvider<T> implements HostController {
     /**
      * @param {HTMLElement} host
      * @param {Context} context
-     * @param {any} initialValue
+     * @param {T|null} [initialValue]
      */
-    constructor(host: HTMLElement, context: Context, initialValue: any);
+    constructor(host: HTMLElement, context: Context, initialValue?: T | null);
     host: HTMLElement;
     context: Context;
-    state: import("mi-signal").State<any>;
+    state: import("mi-signal").State<T | null | undefined>;
     hostConnected(): void;
     hostDisconnected(): void;
     /**
-     * @param {any} newValue
+     * @param {T|null|undefined} newValue
      */
-    set(newValue: any): void;
+    set(newValue: T | null | undefined): void;
     /**
-     * @returns {any}
+     * @returns {T|null|undefined}
      */
-    get(): any;
+    get(): T | null | undefined;
     /**
      * @private
      * @param {ContextRequestEvent} ev
      */
     private onContextRequest;
 }
-export class ContextRequestEvent extends Event {
+/**
+ * @template T
+ */
+export class ContextRequestEvent<T> extends Event {
     /**
      * @param {Context} context
-     * @param {(value: any, unsubscribe?: () => void) => void} callback
+     * @param {(value: T|null|undefined, unsubscribe?: () => void) => void} callback
      * @param {boolean} [subscribe=false] subscribe to value changes
      */
-    constructor(context: Context, callback: (value: any, unsubscribe?: () => void) => void, subscribe?: boolean);
+    constructor(context: Context, callback: (value: T | null | undefined, unsubscribe?: () => void) => void, subscribe?: boolean);
     context: Context;
-    callback: (value: any, unsubscribe?: () => void) => void;
+    callback: (value: T | null | undefined, unsubscribe?: () => void) => void;
     subscribe: boolean | undefined;
 }
 /**
+ * @template T
  * @implements {HostController}
  */
-export class ContextConsumer implements HostController {
+export class ContextConsumer<T> implements HostController {
     /**
      * @param {HTMLElement} host
      * @param {Context} context
@@ -57,12 +62,20 @@ export class ContextConsumer implements HostController {
     context: Context;
     subscribe: boolean;
     validate: (any: any) => boolean;
-    value: any;
     unsubscribe: any;
+    /**
+     * @returns {T|null|undefined}
+     */
+    get(): T | null | undefined;
+    /**
+     * @returns {T|null|undefined}
+     */
+    get value(): T | null | undefined;
     hostConnected(): void;
     hostDisconnected(): void;
     dispatchRequest(): void;
     _callback(value: any, unsubscribe: any): void;
+    #private;
 }
 export type HostController = import("./element.js").HostController;
 export type Context = string | Symbol;
