@@ -11,17 +11,19 @@
   "author": "commenthol <commenthol@gmail.com>",
   "type": "module",
   "scripts": {
-    "all": "pnpm -r run all",
+    "all": "node scripts/all.js",
     "f": "pnpm --filter \"./packages/*\" -r",
     "lint": "pnpm -r run lint",
     "test": "pnpm -r run test",
-    "version": "./run.sh version"
+    "version": "node scripts/version.js"
   },
   "engines": {
     "node": ">=20.0.0",
     "pnpm": ">=10"
   },
   "devDependencies": {
+    "npm-run-all2": "^8.0.4",
+    "shelljs": "^0.10.0",
     "versionn": "^1.1.1"
   }
 }
