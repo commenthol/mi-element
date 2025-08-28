@@ -1,7 +1,7 @@
 {
   "name": "mi-html",
   "version": "0.6.5",
-  "description": "Signal for reactive behavior",
+  "description": "html template literal for building reactive web components",
   "keywords": [
     "signal",
     "effect"

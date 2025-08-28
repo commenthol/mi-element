@@ -3,7 +3,7 @@
 
 # mi-intl
 
-Formats strings using [ICU Message Syntax][icu-syntax] for [mi-element][].
+> Formats strings using [ICU Message Syntax][icu-syntax] for [mi-element][].
 
 **Table of contents**
 
