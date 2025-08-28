@@ -28,15 +28,29 @@ export const escHtml = (string) =>
   // @ts-expect-error
   string instanceof UnsafeHtml
     ? string
-    : ('' + string)
-        .replace(/&amp;/g, '&')
-        .replace(/[&<>'"]/g, (tag) => escMap[tag])
+    : unsafeHtml(
+        ('' + string)
+          .replace(/&amp;/g, '&')
+          .replace(/[&<>'"]/g, (tag) => escMap[tag])
+      )
 
 /**
- * template literal to HTML escape all values preventing XSS
+ * template literal to HTML escape all values preventing XSS;
+ * arrays will be escaped and joined
  * @param {string[]} strings
- * @param  {...any} vars
+ * @param  {...any} values
  * @returns {string}
+ * @example 
+ * const data = ['<foo', 'bar>']
+ * const list = esc`<ul>${data.map(item => esc`<li>${item}</li>`)}</ul>`
+ * // '<ul><li>&lt;foo</li><li>bar&gt;</li></ul>'
  */
-export const esc = (strings, ...vars) =>
-  unsafeHtml(String.raw({ raw: strings }, ...vars.map(escHtml)))
+export const esc = (strings, ...values) =>
+  unsafeHtml(
+    String.raw(
+      { raw: strings },
+      ...values.map((val) =>
+        Array.isArray(val) ? val.map(escHtml).join('') : escHtml(val)
+      )
+    )
+  )
