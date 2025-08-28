@@ -40,7 +40,7 @@ export const escHtml = (string) =>
  * @param {string[]} strings
  * @param  {...any} values
  * @returns {string}
- * @example 
+ * @example
  * const data = ['<foo', 'bar>']
  * const list = esc`<ul>${data.map(item => esc`<li>${item}</li>`)}</ul>`
  * // '<ul><li>&lt;foo</li><li>bar&gt;</li></ul>'
