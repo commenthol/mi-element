@@ -5,6 +5,14 @@ import { I18n } from './i18n.js';
 const INTL_CONTEXT = 'mi-intl', requestAnimationFrameP = () => new Promise(resolve => requestAnimationFrame(resolve));
 
 class MiIntlProvider extends MiElement {
+  version='';
+  lng='';
+  defaultNs='';
+  ns='';
+  supportedLngs='';
+  localesPath='';
+  useLabel=!1;
+  debug=!1;
   static get attributes() {
     return {
       version: '',

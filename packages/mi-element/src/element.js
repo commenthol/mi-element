@@ -265,6 +265,7 @@ export class MiElement extends HTMLElement {
    * @param {HTMLTemplateElement} template
    */
   addTemplate(template) {
+    if (!template) return
     if (!(template instanceof HTMLTemplateElement)) {
       throw new Error('template is not a HTMLTemplateElement')
     }

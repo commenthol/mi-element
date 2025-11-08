@@ -24,6 +24,22 @@ export class MiIntlProvider extends MiElement {
         loading: boolean;
     };
     static template: string;
+    /** @type {string} */
+    version: string;
+    /** @type {string} */
+    lng: string;
+    /** @type {string} */
+    defaultNs: string;
+    /** @type {string} */
+    ns: string;
+    /** @type {string} */
+    supportedLngs: string;
+    /** @type {string} */
+    localesPath: string;
+    /** @type {boolean} */
+    useLabel: boolean;
+    /** @type {boolean} */
+    debug: boolean;
     /**
      * @param {I18nOptions} options
      */

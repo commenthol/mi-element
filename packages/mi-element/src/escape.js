@@ -37,7 +37,7 @@ export const escHtml = (string) =>
 /**
  * template literal to HTML escape all values preventing XSS;
  * arrays will be escaped and joined
- * @param {string[]} strings
+ * @param {TemplateStringsArray} strings
  * @param  {...any} values
  * @returns {string}
  * @example

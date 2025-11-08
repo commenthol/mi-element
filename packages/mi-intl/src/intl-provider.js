@@ -10,6 +10,23 @@ const requestAnimationFrameP = () =>
   new Promise((resolve) => requestAnimationFrame(resolve))
 
 export class MiIntlProvider extends MiElement {
+  /** @type {string} */
+  version = ''
+  /** @type {string} */
+  lng = ''
+  /** @type {string} */
+  defaultNs = ''
+  /** @type {string} */
+  ns = ''
+  /** @type {string} */
+  supportedLngs = ''
+  /** @type {string} */
+  localesPath = ''
+  /** @type {boolean} */
+  useLabel = false
+  /** @type {boolean} */
+  debug = false
+
   static get attributes() {
     return {
       /** translation version */

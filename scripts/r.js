@@ -17,7 +17,7 @@ export const run = (cmd) => {
   for (const pckage of packages) {
     cd(cwd)
     cd(`./packages/${pckage}`)
-    console.log(process.cwd())
+    console.log(`=== ${process.cwd()}`)
     exec(cmd)
   }
 }
