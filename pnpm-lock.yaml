@@ -139,7 +139,7 @@ importers:
   packages/mi-html:
     dependencies:
       mi-signal:
-        specifier: workspace:^0.5.0
+        specifier: workspace:*
         version: link:../mi-signal
       uhtml:
         specifier: ^4.7.1

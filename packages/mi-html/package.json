@@ -54,7 +54,7 @@
     "types": "tsc"
   },
   "dependencies": {
-    "mi-signal": "workspace:^0.5.0",
+    "mi-signal": "workspace:*",
     "uhtml": "^4.7.1"
   },
   "devDependencies": {
