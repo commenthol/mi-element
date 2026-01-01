@@ -1,7 +1,7 @@
-import { define, MiElement, refsBySelector } from '../../dist/index.js'
+import { define, MiElement } from '../../dist/index.js'
 
 class TodoItem extends MiElement {
-  static shadowRootOptions = null
+  static shadowRootInit = null
 
   static template = `
   <li class="item">
@@ -11,12 +11,16 @@ class TodoItem extends MiElement {
   </li>
   `
 
-  static get attributes() {
-    return { checked: false, text: '', index: 0 }
+  static get properties() {
+    return { 
+      checked: { type: Boolean }, 
+      text: {}, 
+      index: { type: Number } 
+    }
   }
 
   render() {
-    const refs = (this.refs = refsBySelector(this.renderRoot, {
+    const refs = (this.refs = this.refsBySelector({
       item: '.item',
       removeButton: '.destroy',
       text: 'label',

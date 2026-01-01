@@ -1,12 +1,19 @@
-import { define, MiElement, render, html } from '../../dist/index.min.js'
+import { define, MiElement } from '../../src/index.js'
+import { render, html } from 'mi-html'
 
 define(
   'mi-counter',
   class extends MiElement {
-    static get attributes() {
+    static get properties() {
       return {
-        count: 1
+        count: { type: Number }
       }
+    }
+
+    constructor() {
+      super()
+      // initialize property
+      this.count = 0
     }
 
     render() {

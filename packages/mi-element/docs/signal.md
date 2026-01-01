@@ -24,7 +24,7 @@ For convenience there is a `createSignal(initialValue<T>): State<T>` function to
 create a signal.
 
 ```js
-import { createSignal, State } from 'mi-element'
+import { createSignal, State } from 'mi-signal'
 
 const signal = createSignal(1)
 // same as
@@ -58,7 +58,7 @@ signals state as well as to update on any change through
 _synchronously_!
 
 ```js
-import { createSignal, effect } from 'mi-element'
+import { createSignal, effect } from 'mi-signal'
 
 const signal = createSignal(1)
 
@@ -157,14 +157,15 @@ MiElement attributes are backed by signals. To subscribe to reactive changes a
 `Signal.effect` callback can be used on all observed attributes.
 
 ```js
-import { effect, define, MiElement, refByIds } from 'mi-element'
+import { effect, define, MiElement } from 'mi-element'
+import { createSignal } from 'mi-signal'
 
 define(
   'mi-counter',
   class extends MiElement {
     static template = `
-      <button id> + </button>
-      <div id></div>
+      <button> + </button>
+      <div></div>
     `
 
     static get attributes() {
@@ -174,8 +175,14 @@ define(
       }
     }
 
+    // define the signal to make all properties reactive
+    static createSignal = createSignal
+
     render() {
-      this.refs = refsById(this.renderRoot)
+      // define initial value
+      this.count = this.count ?? 0
+
+      this.refs = this.refsBySelector({ button: 'button', div: 'div' })
       this.refs.button.addEventListener('click', () => {
         // change observed and reactive attribute...
         this.count++

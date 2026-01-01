@@ -16,9 +16,9 @@ import { html, render } from 'mi-html'
 define(
   'mi-counter',
   class extends MiElement {
-    static get attributes() {
+    static get properties() {
       return {
-        count: 1 //<< this.count is already a signal
+        count: { type: Number } //<< this.count is already a signal
       }
     }
 

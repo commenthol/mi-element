@@ -1,5 +1,15 @@
-import { camelToKebabCase } from './case.js'
+import { kebabToCamelCase, camelToKebabCase } from './case.js'
+import { addGlobalStyles } from './styling.js'
+import { refsBySelector } from './refs.js'
 import { createSignal } from 'mi-signal'
+
+/**
+ * Mapping of attribute names to property names
+ */
+const nameMap = {
+  class: 'className',
+  for: 'htmlFor'
+}
 
 /**
  * @typedef {object} HostController controller
@@ -16,12 +26,14 @@ import { createSignal } from 'mi-signal'
  * @example
  * ```js
  * class Example extends MiElement {
- *  // define all observed attributes with its default initial value.
- *  // for yet to defined numbers, boolean or strings use `Number`, `Boolean`, `String`
- *  // attributes are accessible via `this[prop]`
- *  // avoid using attributes which are HTMLElement properties e.g. className
+ *  // define all observed attributes and define its type,
+ *  // either use String/'', Number/0, Boolean/true, Array/[], Object/{}.
+ *  // Objects and Arrays are deserialized from JSON.
+ *  // Attributes are accessible via `this[prop]` as camelCased properties.
+ *  // camelCased attributes are converted to kebab-case automatically.
+ *  // Avoid using attributes which are HTMLElement properties e.g. className
  *  static get attributes () {
- *    return { text: 'Hi', num: Number }
+ *    return { text: '', num: Number }
  *  }
  *  render() {
  *    this.renderRoot.innerHTML = `<div></div>`
@@ -44,24 +56,14 @@ import { createSignal } from 'mi-signal'
  * ```
  */
 export class MiElement extends HTMLElement {
-  /** all attributes are signals! */
-  #attr = {}
-  /**
-   * lower-cased or kebab-case attribute names;
-   * Map<lower-cased and kebab-cased attr name, camelCased attr name as string>
-   * @type {Map<string, string>}
-   */
-  #attrLc = new Map()
-  /**
-   * initial types (from `static get attributes() { return {} }`)
-   * Map<camelCased attribute name, type as string>
-   * @type {Map<string,string>}
-   */
-  #types = new Map()
+  /** all properties are signals! */
+  _props = {}
+  /** changed properties */
+  #changedProps = {}
+
   #disposers = new Set()
   #controllers = new Set()
-  #changedAttr = {}
-  #dedupe = false
+  #updateRequested = false
 
   /**
    * Default options used when calling `attachShadow`. Used in
@@ -69,7 +71,9 @@ export class MiElement extends HTMLElement {
    * If override is `null`, no shadow-root will be attached.
    * @type {{mode: string}|null}
    */
-  static shadowRootOptions = { mode: 'open' }
+  static get shadowRootInit() {
+    return { mode: 'open' }
+  }
 
   /**
    * defines template for render().
@@ -78,83 +82,75 @@ export class MiElement extends HTMLElement {
   static template
 
   /**
-   * observable attributes
-   * @returns {Record<PropertyKey, unknown>|{}}
-   */
-  static get attributes() {
-    return {}
-  }
-  /**
-   * observable properties
-   * @returns {Record<PropertyKey, unknown>|{}}
+   * used to define observedAttributes and booleanAttributes during registration
+   * @returns {Record<string, {attribute?: boolean, type?:String|Number|Boolean|Array|Object, initial?: any}>} attribute name to isBoolean map
    */
   static get properties() {
-    return {}
+    // to be overridden
+    // @ts-expect-error
+    return undefined
   }
+  /**
+   * @returns {string[]}
+   */
+  static observedAttributes = []
+
+  /**
+   * @returns {string} css styles
+   */
+  static styles = ''
+  /**
+   * Whether to use global styles instead of scoped styles.
+   * @returns {boolean}
+   */
+  static get useGlobalStyles() {
+    return false
+  }
+
+  /**
+   * Define createSignal function for properties.
+   * Signal values are set with the .value property
+   * @returns {import('mi-signal').createSignal|null} createSignal function
+   */
+  static createSignal = createSignal
 
   constructor() {
     super()
     // @ts-expect-error
-    this.#observedAttributes(this.constructor.attributes)
-    // @ts-expect-error
-    this.#observedProperties(this.constructor.properties)
-  }
-
-  #observe(name, initialValue) {
-    this.#attr[name] = createSignal(initialValue)
-    Object.defineProperty(this, name, {
-      enumerable: true,
-      get() {
-        return this.#attr[name].get()
-      },
-      set(newValue) {
-        const oldValue = this.#attr[name].get()
-        if (oldValue === newValue) return
-        this.#attr[name].set(newValue)
-        this.#changedAttr[name] = oldValue
-        this.requestUpdate()
+    const { createSignal, properties } = this.constructor
+    for (const [name, { initial }] of Object.entries(properties)) {
+      // allow overwrites with setter, getters
+      const descriptor = Object.getOwnPropertyDescriptor(
+        this.constructor.prototype,
+        name
+      )
+      if (createSignal) {
+        this._props[name] = createSignal()
       }
-    })
-  }
-
-  /**
-   * requests update on component when property changes
-   * @param {Record<string, any>} [attributes]
-   */
-  #observedAttributes(attributes = {}) {
-    for (const [name, value] of Object.entries(attributes)) {
-      const initial = initialValueType(value)
-      this.#types.set(name, initial.type)
-      this.#attrLc.set(name.toLowerCase(), name)
-      this.#attrLc.set(camelToKebabCase(name), name)
-      this.#observe(name, initial.value)
+      Object.defineProperty(this, name, {
+        get() {
+          if (descriptor?.get) {
+            return descriptor.get.call(this)
+          }
+          return createSignal ? this._props[name].value : this._props[name]
+        },
+        set(value) {
+          const oldValue = this[name]
+          if (descriptor?.set) {
+            descriptor.set.call(this, value)
+          } else if (createSignal) {
+            this._props[name].value = value
+          } else {
+            this._props[name] = value
+          }
+          if (oldValue !== this[name]) {
+            this.requestUpdate({ [name]: value })
+          }
+        }
+      })
+      // set initial value
+      this[name] = initial
     }
-  }
-
-  /**
-   * define (direct) properties
-   * @param {Record<string, any>} [properties]
-   */
-  #observedProperties(properties = {}) {
-    for (const [name, value] of Object.entries(properties)) {
-      if (this.#attrLc.has(name) || name in this.#attr) {
-        continue
-      }
-      this.#observe(name, value)
-    }
-  }
-
-  /**
-   * return camelCased value instead of possible lowercased
-   * @param {string} name
-   * @returns
-   */
-  #getName(name) {
-    return this.#attrLc.get(name) || name
-  }
-
-  #getType(name) {
-    return this.#types.get(name)
   }
 
   /**
@@ -163,17 +159,17 @@ export class MiElement extends HTMLElement {
    */
   connectedCallback() {
     this.#controllers.forEach((controller) => controller.hostConnected?.())
-    // create render root
     // @ts-expect-error
-    const { shadowRootOptions, template } = this.constructor
-    this.renderRoot = shadowRootOptions
-      ? (this.shadowRoot ?? this.attachShadow(shadowRootOptions))
+    const { shadowRootInit, useGlobalStyles, template } = this.constructor
+    this.renderRoot = shadowRootInit
+      ? (this.shadowRoot ?? this.attachShadow(shadowRootInit))
       : this
     this.addTemplate(template)
-    // trigger initial rendering such that children can be added via JS
-    this.render()
-    // and update
-    this.requestUpdate()
+    if (useGlobalStyles) {
+      addGlobalStyles(this.renderRoot)
+    }
+    this.render() // initial render
+    this.requestUpdate() // request initial update
   }
 
   /**
@@ -188,75 +184,39 @@ export class MiElement extends HTMLElement {
 
   /**
    * @param {string} name change attribute
-   * @param {any} oldValue
+   * @param {any} _oldValue
    * @param {any} newValue new value
    */
-  attributeChangedCallback(name, oldValue, newValue) {
-    const attr = this.#getName(name)
-    const type = this.#getType(attr)
-    this.#changedAttr[attr] = this[attr]
-    this[attr] = convertType(newValue, type)
-    // correct initial setting of `trueish="false"` otherwise there's no chance
-    // to overwrite a trueish value. The case `falsish="true"` is covered.
-    if (type === 'Boolean' && newValue === 'false') {
-      this.removeAttribute(name)
-    }
-    this.requestUpdate()
-  }
-
-  /**
-   * Set string and number attributes on element only. Set all other values as
-   * properties to avoid type conversion to and from string
-   * @param {string} name
-   * @param {any} newValue
-   */
-  setAttribute(name, newValue) {
-    const attr = this.#getName(name)
-    // only allow to change observedAttributes
-    if (!(attr in this.#attr)) {
-      return
-    }
-    const type = this.#getType(attr)
-
-    // only set string values in these cases
-    if (type === 'Boolean') {
-      if (newValue === true || newValue === '') {
-        super.setAttribute(name, '')
-      } else {
-        super.removeAttribute(name)
+  attributeChangedCallback(name, _oldValue, newValue) {
+    const camelName = nameMap[name] ?? kebabToCamelCase(name)
+    // @ts-expect-error
+    const properties = this.constructor?.properties
+    const { type } = properties?.[camelName] ?? {}
+    const coercedValue = convertType(newValue, type)
+    // set data-* attributes to dataset
+    if (name.startsWith('data-')) {
+      const datasetName = kebabToCamelCase(name.substring(5))
+      // datasetName may be empty if attribute is just 'data-'
+      if (datasetName) {
+        this.dataset[datasetName] = coercedValue
       }
-    } else if (['String', 'Number'].includes(type ?? '') || newValue === true) {
-      super.setAttribute(name, newValue)
-    } else {
-      this.#changedAttr[attr] = this[attr]
-      this[attr] = newValue
-      this.requestUpdate()
     }
+    this[camelName] = coercedValue
   }
 
   /**
-   * controls if component shall be updated
-   * @param {Record<string,any>} [_changedAttributes] previous values of changed attributes
-   * @returns {boolean}
+   * @param {Record<string, any>} [changedProps]
    */
-  shouldUpdate(_changedAttributes) {
-    return true
-  }
-
-  /**
-   * request rendering
-   */
-  requestUpdate() {
-    if (this.#dedupe || !this.isConnected) return
-    this.#dedupe = true
-    requestAnimationFrame(() => {
-      this.#dedupe = false
-      // reset changed attributes
-      const _changedAttributes = this.#changedAttr
-      this.#changedAttr = {}
-      if (this.shouldUpdate(_changedAttributes)) {
-        this.update(_changedAttributes)
-      }
+  requestUpdate(changedProps) {
+    this.#changedProps = { ...this.#changedProps, ...changedProps }
+    if (this.#updateRequested || !this.renderRoot) return
+    this.#updateRequested = true
+    window.requestAnimationFrame(() => {
+      this.#updateRequested = false
+      // reset changed properties
+      const changedProps = this.#changedProps
+      this.#changedProps = {}
+      this.update(changedProps)
     })
   }
 
@@ -275,14 +235,18 @@ export class MiElement extends HTMLElement {
   /**
    * initial rendering
    */
-  render() {}
+  render() {
+    // to be overridden
+  }
 
   /**
    * called every time the components needs a render update
-   * @param {Record<string,any>} [_changedAttributes] previous values of changed
-   * attributes
+   * @param {Record<string, any>} [_changedProps] previous values of changed
+   * properties (attributes)
    */
-  update(_changedAttributes) {}
+  update(_changedProps) {
+    // to be overridden
+  }
 
   /**
    * Adds listener function for eventName. listener is removed before component
@@ -341,29 +305,68 @@ export class MiElement extends HTMLElement {
   removeController(controller) {
     this.#controllers.delete(controller)
   }
+
+  refsBySelector(selectors) {
+    return refsBySelector(this.renderRoot, selectors)
+  }
 }
 
 /**
  * defines a custom element adding observedAttributes from default static
  * attributes
- * NOTE: camelCased attributes get lowercased!
+ * NOTE: camelCased attributes on DOM elements get lowercased by the browser!
+ * Prefer using static get attributes() where camelCased names are converted to
+ * kebab-case automatically.
  * ```html
  * <custom-element myAttr="1">
  * <!-- is equal to -->
  * <custom-element myattr="1">
  * ```
- * @param {string} name custom element tag
- * @param {typeof MiElement} element
- * @param {object} [options]
+ * @param {string} tagName custom element tag
+ * @param {typeof MiElement} elementClass
+ * @param {{usedCssPrefix?: string, cssPrefix?: string, styles?: string}} [options]
  */
-export const define = (name, element, options) => {
-  // @ts-expect-error
-  element.observedAttributes = // @ts-expect-error
-    (element.observedAttributes || Object.keys(element.attributes || [])).map(
-      (attr) => attr.toLowerCase()
-    )
-  renderTemplate(element)
-  window.customElements.define(name, element, options)
+export const define = (tagName, elementClass, options) => {
+  if (customElements.get(tagName)) {
+    return
+  }
+  const { usedCssPrefix = '', cssPrefix = '', styles } = options || {}
+  if (elementClass.properties) {
+    // only lowercase attribute names are observed!
+    const observedAttrs = []
+    for (const [name, { attribute = true }] of Object.entries(
+      elementClass.properties
+    )) {
+      if (attribute) {
+        observedAttrs.push(camelToKebabCase(name))
+      }
+    }
+    Object.defineProperty(elementClass, 'observedAttributes', {
+      get() {
+        return observedAttrs
+      }
+    })
+  } else if (elementClass.observedAttributes) {
+    const properties = elementClass.observedAttributes.reduce((acc, attr) => {
+      const camelName = kebabToCamelCase(attr)
+      acc[camelName] = {}
+      return acc
+    }, {})
+    Object.defineProperty(elementClass, 'properties', {
+      get() {
+        return properties
+      }
+    })
+  }
+  if (elementClass.styles) {
+    elementClass.styles =
+      styles ||
+      (usedCssPrefix === cssPrefix
+        ? elementClass.styles
+        : elementClass.styles.replaceAll(`--${usedCssPrefix}-`, cssPrefix))
+  }
+  renderTemplate(elementClass)
+  window.customElements.define(tagName, elementClass)
 }
 
 // --- utils
@@ -381,35 +384,38 @@ const renderTemplate = (element) => {
   element.template = el
 }
 
-const initialValueType = (value) => {
-  switch (value) {
-    case Boolean:
-      return { value: undefined, type: 'Boolean' }
-    case Number:
-      return { value: undefined, type: 'Number' }
-    case String:
-      return { value: undefined, type: 'String' }
-    default:
-      return { value, type: toString.call(value).slice(8, -1) }
-  }
-}
-
 const toNumber = (any) => {
   const n = Number(any)
-  return isNaN(n) ? any : n
+  return isNaN(n) ? 0 : n
 }
 
-export const convertType = (any, type) => {
-  // setAttribute prevents passing Object or Array type. no further conversion required
-  switch (type) {
-    case 'Number':
-      return toNumber(any)
-    case 'Boolean':
-      // boolean values are set via setAttribute as empty string
-      if (any === 'false') {
-        return false
-      }
-      return any === '' || !!any
+const toJson = (any) => {
+  try {
+    return JSON.parse(any)
+  } catch {
+    return
   }
-  return any
+}
+
+/**
+ * convert a attribute string value to typed value
+ * @param {string} value
+ * @param {typeof Boolean|typeof Number|typeof String|typeof Array|typeof Object} type
+ * @returns {any}
+ */
+export const convertType = (value, type) => {
+  if (type === Boolean) {
+    // false: removeAttribute -> null, true: setAttribute -> ''
+    return value !== null
+  }
+  if (type === Number) {
+    return toNumber(value)
+  }
+  if (type === Array) {
+    return toJson(value) ?? value.split(',').map((v) => v.trim())
+  }
+  if (type === Object) {
+    return toJson(value)
+  }
+  return value
 }

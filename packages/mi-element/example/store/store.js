@@ -1,7 +1,8 @@
-import { Store, Signal } from '../../dist/index.js'
+import { Store } from '../../dist/index.js'
+import Signal from 'mi-signal'
 
 const tty = document.querySelector('#tty')
-const consolelog = (...args) => {
+const consoleLog = (...args) => {
   const node = document.createTextNode(args.join(' ') + '\n')
   tty.appendChild(node)
 }
@@ -16,7 +17,7 @@ const initialValue = 1
 const store = new Store(actions, initialValue)
 
 // create effect, which is executed immediately
-const unsubscribe = Signal.effect(() => consolelog(`count is ${store.get()}`))
+const unsubscribe = Signal.effect(() => consoleLog(`count is ${store.get()}`))
 //> count is 1
 
 // change the store

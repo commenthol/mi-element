@@ -1,5 +1,7 @@
 import { describe, it, expect } from 'vitest'
-import { Store, effect } from '../src/index.js'
+import { Store, Signal } from '../src/index.js'
+
+const { effect } = Signal
 
 describe('store', () => {
   const actions = {

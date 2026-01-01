@@ -1,86 +1,80 @@
-import { camelToKebabCase } from './case.js';
+import { kebabToCamelCase, camelToKebabCase } from './case.js';
+
+import { addGlobalStyles } from './styling.js';
+
+import { refsBySelector } from './refs.js';
 
 import { createSignal } from 'mi-signal';
 
+const nameMap = {
+  class: 'className',
+  for: 'htmlFor'
+};
+
 class MiElement extends HTMLElement {
-  #attr={};
-  #attrLc=new Map;
-  #types=new Map;
+  _props={};
+  #changedProps={};
   #disposers=new Set;
   #controllers=new Set;
-  #changedAttr={};
-  #dedupe=!1;
-  static shadowRootOptions={
-    mode: 'open'
-  };
+  #updateRequested=!1;
+  static get shadowRootInit() {
+    return {
+      mode: 'open'
+    };
+  }
   static template;
-  static get attributes() {
-    return {};
+  static get properties() {}
+  static observedAttributes=[];
+  static styles='';
+  static get useGlobalStyles() {
+    return !1;
   }
-  static get properties() {
-    return {};
-  }
+  static createSignal=createSignal;
   constructor() {
-    super(), this.#observedAttributes(this.constructor.attributes), this.#observedProperties(this.constructor.properties);
-  }
-  #observe(name, initialValue) {
-    this.#attr[name] = createSignal(initialValue), Object.defineProperty(this, name, {
-      enumerable: !0,
-      get() {
-        return this.#attr[name].get();
-      },
-      set(newValue) {
-        const oldValue = this.#attr[name].get();
-        oldValue !== newValue && (this.#attr[name].set(newValue), this.#changedAttr[name] = oldValue, 
-        this.requestUpdate());
-      }
-    });
-  }
-  #observedAttributes(attributes = {}) {
-    for (const [name, value] of Object.entries(attributes)) {
-      const initial = initialValueType(value);
-      this.#types.set(name, initial.type), this.#attrLc.set(name.toLowerCase(), name), 
-      this.#attrLc.set(camelToKebabCase(name), name), this.#observe(name, initial.value);
+    super();
+    const {createSignal: createSignal, properties: properties} = this.constructor;
+    for (const [name, {initial: initial}] of Object.entries(properties)) {
+      const descriptor = Object.getOwnPropertyDescriptor(this.constructor.prototype, name);
+      createSignal && (this._props[name] = createSignal()), Object.defineProperty(this, name, {
+        get() {
+          return descriptor?.get ? descriptor.get.call(this) : createSignal ? this._props[name].value : this._props[name];
+        },
+        set(value) {
+          const oldValue = this[name];
+          descriptor?.set ? descriptor.set.call(this, value) : createSignal ? this._props[name].value = value : this._props[name] = value, 
+          oldValue !== this[name] && this.requestUpdate({
+            [name]: value
+          });
+        }
+      }), this[name] = initial;
     }
-  }
-  #observedProperties(properties = {}) {
-    for (const [name, value] of Object.entries(properties)) this.#attrLc.has(name) || name in this.#attr || this.#observe(name, value);
-  }
-  #getName(name) {
-    return this.#attrLc.get(name) || name;
-  }
-  #getType(name) {
-    return this.#types.get(name);
   }
   connectedCallback() {
     this.#controllers.forEach(controller => controller.hostConnected?.());
-    const {shadowRootOptions: shadowRootOptions, template: template} = this.constructor;
-    this.renderRoot = shadowRootOptions ? this.shadowRoot ?? this.attachShadow(shadowRootOptions) : this, 
-    this.addTemplate(template), this.render(), this.requestUpdate();
+    const {shadowRootInit: shadowRootInit, useGlobalStyles: useGlobalStyles, template: template} = this.constructor;
+    this.renderRoot = shadowRootInit ? this.shadowRoot ?? this.attachShadow(shadowRootInit) : this, 
+    this.addTemplate(template), useGlobalStyles && addGlobalStyles(this.renderRoot), 
+    this.render(), this.requestUpdate();
   }
   disconnectedCallback() {
     this.#disposers.forEach(remover => remover()), this.#controllers.forEach(controller => controller.hostDisconnected?.());
   }
-  attributeChangedCallback(name, oldValue, newValue) {
-    const attr = this.#getName(name), type = this.#getType(attr);
-    this.#changedAttr[attr] = this[attr], this[attr] = convertType(newValue, type), 
-    'Boolean' === type && 'false' === newValue && this.removeAttribute(name), this.requestUpdate();
+  attributeChangedCallback(name, _oldValue, newValue) {
+    const camelName = nameMap[name] ?? kebabToCamelCase(name), properties = this.constructor?.properties, {type: type} = properties?.[camelName] ?? {}, coercedValue = convertType(newValue, type);
+    if (name.startsWith('data-')) {
+      const datasetName = kebabToCamelCase(name.substring(5));
+      datasetName && (this.dataset[datasetName] = coercedValue);
+    }
+    this[camelName] = coercedValue;
   }
-  setAttribute(name, newValue) {
-    const attr = this.#getName(name);
-    if (!(attr in this.#attr)) return;
-    const type = this.#getType(attr);
-    'Boolean' === type ? !0 === newValue || '' === newValue ? super.setAttribute(name, '') : super.removeAttribute(name) : [ 'String', 'Number' ].includes(type ?? '') || !0 === newValue ? super.setAttribute(name, newValue) : (this.#changedAttr[attr] = this[attr], 
-    this[attr] = newValue, this.requestUpdate());
-  }
-  shouldUpdate(_changedAttributes) {
-    return !0;
-  }
-  requestUpdate() {
-    !this.#dedupe && this.isConnected && (this.#dedupe = !0, requestAnimationFrame(() => {
-      this.#dedupe = !1;
-      const _changedAttributes = this.#changedAttr;
-      this.#changedAttr = {}, this.shouldUpdate(_changedAttributes) && this.update(_changedAttributes);
+  requestUpdate(changedProps) {
+    this.#changedProps = {
+      ...this.#changedProps,
+      ...changedProps
+    }, !this.#updateRequested && this.renderRoot && (this.#updateRequested = !0, window.requestAnimationFrame(() => {
+      this.#updateRequested = !1;
+      const changedProps = this.#changedProps;
+      this.#changedProps = {}, this.update(changedProps);
     }));
   }
   addTemplate(template) {
@@ -90,7 +84,7 @@ class MiElement extends HTMLElement {
     }
   }
   render() {}
-  update(_changedAttributes) {}
+  update(_changedProps) {}
   on(eventName, listener, node = this) {
     node.addEventListener(eventName, listener), this.#disposers.add(() => node.removeEventListener(eventName, listener));
   }
@@ -111,53 +105,42 @@ class MiElement extends HTMLElement {
   removeController(controller) {
     this.#controllers.delete(controller);
   }
+  refsBySelector(selectors) {
+    return refsBySelector(this.renderRoot, selectors);
+  }
 }
 
-const define = (name, element, options) => {
-  element.observedAttributes = (element.observedAttributes || Object.keys(element.attributes || [])).map(attr => attr.toLowerCase()), 
-  renderTemplate(element), window.customElements.define(name, element, options);
+const define = (tagName, elementClass, options) => {
+  if (customElements.get(tagName)) return;
+  const {usedCssPrefix: usedCssPrefix = "", cssPrefix: cssPrefix = "", styles: styles} = options || {};
+  if (elementClass.properties) {
+    const observedAttrs = [];
+    for (const [name, {attribute: attribute = !0}] of Object.entries(elementClass.properties)) attribute && observedAttrs.push(camelToKebabCase(name));
+    Object.defineProperty(elementClass, 'observedAttributes', {
+      get: () => observedAttrs
+    });
+  } else if (elementClass.observedAttributes) {
+    const properties = elementClass.observedAttributes.reduce((acc, attr) => (acc[kebabToCamelCase(attr)] = {}, 
+    acc), {});
+    Object.defineProperty(elementClass, 'properties', {
+      get: () => properties
+    });
+  }
+  elementClass.styles && (elementClass.styles = styles || (usedCssPrefix === cssPrefix ? elementClass.styles : elementClass.styles.replaceAll(`--${usedCssPrefix}-`, cssPrefix))), 
+  renderTemplate(elementClass), window.customElements.define(tagName, elementClass);
 }, renderTemplate = element => {
   if (element.template instanceof HTMLTemplateElement) return;
   const el = document.createElement('template');
   el.innerHTML = element.template, element.template = el;
-}, initialValueType = value => {
-  switch (value) {
-   case Boolean:
-    return {
-      value: void 0,
-      type: 'Boolean'
-    };
-
-   case Number:
-    return {
-      value: void 0,
-      type: 'Number'
-    };
-
-   case String:
-    return {
-      value: void 0,
-      type: 'String'
-    };
-
-   default:
-    return {
-      value: value,
-      type: toString.call(value).slice(8, -1)
-    };
+}, toJson = any => {
+  try {
+    return JSON.parse(any);
+  } catch {
+    return;
   }
-}, convertType = (any, type) => {
-  switch (type) {
-   case 'Number':
-    return (any => {
-      const n = Number(any);
-      return isNaN(n) ? any : n;
-    })(any);
-
-   case 'Boolean':
-    return 'false' !== any && ('' === any || !!any);
-  }
-  return any;
-};
+}, convertType = (value, type) => type === Boolean ? null !== value : type === Number ? (any => {
+  const n = Number(any);
+  return isNaN(n) ? 0 : n;
+})(value) : type === Array ? toJson(value) ?? value.split(',').map(v => v.trim()) : type === Object ? toJson(value) : value;
 
 export { MiElement, convertType, define };

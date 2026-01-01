@@ -1,7 +1,7 @@
-import { define, MiElement, refsBySelector } from '../../dist/index.js'
+import { define, MiElement } from '../../dist/index.js'
 
 class TodoInput extends MiElement {
-  static shadowRootOptions = null
+  static shadowRootInit = null
 
   static template = `
   <form id="new-todo-form">
@@ -10,7 +10,7 @@ class TodoInput extends MiElement {
   `
 
   render() {
-    const refs = refsBySelector(this.renderRoot, {
+    const refs = this.refsBySelector({
       form: '#new-todo-form',
       input: '#new-todo'
     })

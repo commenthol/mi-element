@@ -1,11 +1,11 @@
 import { describe, it, expect } from 'vitest'
-import { classMap, styleMap, addGlobalStyles } from '../src/styling.js'
+import { classNames, styleMap, addGlobalStyles } from '../src/styling.js'
 import { nap } from './helpers.js'
 
 describe('directives', () => {
-  describe('classMap', () => {
+  describe('classNames', () => {
     it('shall compose class', () => {
-      const actual = classMap({
+      const actual = classNames({
         button: true,
         'btn-primary': '',
         'btn-secondary': 'ok'

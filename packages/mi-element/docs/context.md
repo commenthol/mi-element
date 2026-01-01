@@ -2,9 +2,9 @@
 
 <!-- !toc (minlevel=2) -->
 
-* [ContextProvider](#contextprovider)
-* [ContextConsumer](#contextconsumer)
-* [Connecting consumers to providers](#connecting-consumers-to-providers)
+- [ContextProvider](#contextprovider)
+- [ContextConsumer](#contextconsumer)
+- [Connecting consumers to providers](#connecting-consumers-to-providers)
 
 <!-- toc! -->
 
@@ -17,29 +17,34 @@ Implements the [Context Protocol][].
 ## ContextProvider
 
 ```js
-import {
-  define,
-  MiElement,
-  ContextProvider,
-  ContextConsumer,
-} from 'mi-element'
+import { define, MiElement, ContextProvider, ContextConsumer } from 'mi-element'
 
 define(
   'mi-context-provider',
   class extends MiElement {
-    static get attributes() {
+    static get properties () {
       return {
-        // define the context
-        context: 'counter',
-        value: 0
+        context: {},
+        value: { type: Number }
       }
     }
 
+    constructor() {
+      super()
+      // define the context and set initial value
+      // default context shall be unique amongst other context providers
+      this.context = 'my-context-provider' 
+      this.value = 0
+    }
+
     render() {
-      this.value = this.initialValue
       this.renderRoot.innerHTML = '<slot></slot>'
       this.provider = new ContextProvider(
-        this, this.context, this._providerValue())
+        this,
+        this.context,
+        this._providerValue()
+      )
+      this.update()
     }
 
     update() {
@@ -48,14 +53,16 @@ define(
     }
 
     increment() {
-      // value is observed value, requestUpdate() is called on any change
+      // value is observed value, requestUpdate() is called on every change
       this.value++
     }
 
     _providerValue() {
       // create a new object on every change and add all shared values and methods
       return {
-        value: this.value, increment: this.increment }
+        value: this.value,
+        increment: () => this.increment()
+      }
     }
   }
 )
@@ -64,7 +71,7 @@ define(
 Works also with HTMLElement. In this case you must provide the necessary wiring.
 
 ```js
-customeElement.define('html-context-provider', extends class HTMLElement {
+customElement.define('html-context-provider', extends class HTMLElement {
   connectedCallback() {
     this.provider = new ContextProvider(this, this.context, this)
     this.provider.hostConnected()
@@ -85,11 +92,10 @@ customeElement.define('html-context-provider', extends class HTMLElement {
 define(
   'mi-context-consumer',
   class extends MiElement {
-    static get attributes() {
+    static get properties() {
       return {
-        // define the context
-        context: 'counter',
-        subscribe: true
+        context: {},
+        subscribe: { type: Boolean }
       }
     }
 
@@ -97,14 +103,24 @@ define(
     <button id>Increment</button>
     <span id>0</span>`
 
+    constructor() {
+      super()
+      // define the context and set initial value
+      // default context shall be unique amongst other context providers 
+      // must match the context-providers context!
+      this.context = 'my-context-provider'
+      this.subscribe = false
+    }
+
     render() {
       this.consumer = new ContextConsumer(this, this.context, {
-        subscribe: !!this.subscribe
+        subscribe: this.subscribe
       })
       this.refs = refsById(this.renderRoot)
       this.refs.button.addEventListener('click', () => {
         this.consumer.value.increment()
       })
+      this.update()
     }
 
     update() {
@@ -120,14 +136,14 @@ define(
 <mi-context-provider context="outer">
   <mi-context-provider value="3">
     <div>
-      <!-- does not subscribe to any changes (works only with MiElement)-->
-      <mi-context-consumer subscribe="false">
+      <!-- does not subscribe to any changes -->
+      <mi-context-consumer>
         <!-- 3 -->
       </mi-context-consumer>
     </div>
     <div>
-      <!-- connects to outer context provider -->
-      <mi-context-consumer context="outer">
+      <!-- connects to outer context provider and subscribes to changes -->
+      <mi-context-consumer context="outer" subscribe>
         <!-- 0 -->
       </mi-context-consumer>
     </div>

@@ -62,4 +62,5 @@ const actions = {
     (by = 1) =>
     (state) => ({ ...state, count: state.count + by })
 }
+const store = new Store(actions, initialValue)
 ```

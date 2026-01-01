@@ -12,12 +12,14 @@
  * @example
  * ```js
  * class Example extends MiElement {
- *  // define all observed attributes with its default initial value.
- *  // for yet to defined numbers, boolean or strings use `Number`, `Boolean`, `String`
- *  // attributes are accessible via `this[prop]`
- *  // avoid using attributes which are HTMLElement properties e.g. className
+ *  // define all observed attributes and define its type,
+ *  // either use String/'', Number/0, Boolean/true, Array/[], Object/{}.
+ *  // Objects and Arrays are deserialized from JSON.
+ *  // Attributes are accessible via `this[prop]` as camelCased properties.
+ *  // camelCased attributes are converted to kebab-case automatically.
+ *  // Avoid using attributes which are HTMLElement properties e.g. className
  *  static get attributes () {
- *    return { text: 'Hi', num: Number }
+ *    return { text: '', num: Number }
  *  }
  *  render() {
  *    this.renderRoot.innerHTML = `<div></div>`
@@ -46,7 +48,7 @@ export class MiElement extends HTMLElement {
      * If override is `null`, no shadow-root will be attached.
      * @type {{mode: string}|null}
      */
-    static shadowRootOptions: {
+    static get shadowRootInit(): {
         mode: string;
     } | null;
     /**
@@ -55,15 +57,35 @@ export class MiElement extends HTMLElement {
      */
     static template: string | HTMLTemplateElement;
     /**
-     * observable attributes
-     * @returns {Record<PropertyKey, unknown>|{}}
+     * used to define observedAttributes and booleanAttributes during registration
+     * @returns {Record<string, {attribute?: boolean, type?:String|Number|Boolean|Array|Object, initial?: any}>} attribute name to isBoolean map
      */
-    static get attributes(): Record<PropertyKey, unknown> | {};
+    static get properties(): Record<string, {
+        attribute?: boolean;
+        type?: string | number | boolean | any[] | any;
+        initial?: any;
+    }>;
     /**
-     * observable properties
-     * @returns {Record<PropertyKey, unknown>|{}}
+     * @returns {string[]}
      */
-    static get properties(): Record<PropertyKey, unknown> | {};
+    static observedAttributes: any[];
+    /**
+     * @returns {string} css styles
+     */
+    static styles: string;
+    /**
+     * Whether to use global styles instead of scoped styles.
+     * @returns {boolean}
+     */
+    static get useGlobalStyles(): boolean;
+    /**
+     * Define createSignal function for properties.
+     * Signal values are set with the .value property
+     * @returns {import('mi-signal').createSignal|null} createSignal function
+     */
+    static createSignal: typeof createSignal;
+    /** all properties are signals! */
+    _props: {};
     /**
      * creates the element's renderRoot, sets up styling
      * @category lifecycle
@@ -76,27 +98,14 @@ export class MiElement extends HTMLElement {
     disconnectedCallback(): void;
     /**
      * @param {string} name change attribute
-     * @param {any} oldValue
+     * @param {any} _oldValue
      * @param {any} newValue new value
      */
-    attributeChangedCallback(name: string, oldValue: any, newValue: any): void;
+    attributeChangedCallback(name: string, _oldValue: any, newValue: any): void;
     /**
-     * Set string and number attributes on element only. Set all other values as
-     * properties to avoid type conversion to and from string
-     * @param {string} name
-     * @param {any} newValue
+     * @param {Record<string, any>} [changedProps]
      */
-    setAttribute(name: string, newValue: any): void;
-    /**
-     * controls if component shall be updated
-     * @param {Record<string,any>} [_changedAttributes] previous values of changed attributes
-     * @returns {boolean}
-     */
-    shouldUpdate(_changedAttributes?: Record<string, any>): boolean;
-    /**
-     * request rendering
-     */
-    requestUpdate(): void;
+    requestUpdate(changedProps?: Record<string, any>): void;
     /**
      * adds a template to renderRoot
      * @param {HTMLTemplateElement} template
@@ -108,10 +117,10 @@ export class MiElement extends HTMLElement {
     render(): void;
     /**
      * called every time the components needs a render update
-     * @param {Record<string,any>} [_changedAttributes] previous values of changed
-     * attributes
+     * @param {Record<string, any>} [_changedProps] previous values of changed
+     * properties (attributes)
      */
-    update(_changedAttributes?: Record<string, any>): void;
+    update(_changedProps?: Record<string, any>): void;
     /**
      * Adds listener function for eventName. listener is removed before component
      * disconnects
@@ -143,10 +152,19 @@ export class MiElement extends HTMLElement {
      * @param {HostController} controller
      */
     removeController(controller: HostController): void;
+    /**
+     * properties or attributes
+     */
+    [index: PropertyKey]: any;
+    refsBySelector(selectors: any): {} | Record<string, Node>;
     #private;
 }
-export function define(name: string, element: typeof MiElement, options?: object): void;
-export function convertType(any: any, type: any): any;
+export function define(tagName: string, elementClass: typeof MiElement, options?: {
+    usedCssPrefix?: string;
+    cssPrefix?: string;
+    styles?: string;
+}): void;
+export function convertType(value: string, type: typeof Boolean | typeof Number | typeof String | typeof Array | typeof Object): any;
 /**
  * controller
  */
@@ -162,3 +180,4 @@ export type HostController = {
      */
     hostDisconnected: () => void;
 };
+import { createSignal } from 'mi-signal';

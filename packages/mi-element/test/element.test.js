@@ -1,6 +1,8 @@
 import { assert, describe, it, beforeEach } from 'vitest'
-import { define, MiElement, refsBySelector, esc as html } from '../src/index.js'
+import { define, MiElement, html, Signal } from '../src/index.js'
 import { nap } from './helpers.js'
+
+const { createSignal, effect } = Signal
 
 describe('MiElement', () => {
   describe('template', () => {
@@ -27,7 +29,7 @@ describe('MiElement', () => {
     it('shall transform template from string', () => {
       const tag = 'mi-test-template-str'
       class MiTest extends MiElement {
-        static shadowRootOptions = null
+        static shadowRootInit = null
         static template = '<h1>string</h1>'
       }
       assert.strictEqual(toString.call(MiTest.template), '[object String]')
@@ -45,7 +47,7 @@ describe('MiElement', () => {
     it('shall transform template from escaped string', () => {
       const tag = 'mi-test-template-esc'
       class MiTest extends MiElement {
-        static shadowRootOptions = null
+        static shadowRootInit = null
         static template = html`<h1>${'escaped>'}</h1>`
       }
       define(tag, MiTest)
@@ -59,7 +61,7 @@ describe('MiElement', () => {
       template.innerHTML = `<h1>template</h1>`
       const tag = 'mi-test-template'
       class MiTest extends MiElement {
-        static shadowRootOptions = null
+        static shadowRootInit = null
         static template = template
       }
       define(tag, MiTest)
@@ -71,7 +73,7 @@ describe('MiElement', () => {
     it('shall throw if addTemplate is not HTMLTemplateElement', () => {
       const tag = 'mi-test-template-add-template-fail'
       class MiTest extends MiElement {
-        static shadowRootOptions = null
+        static shadowRootInit = null
       }
       define(tag, MiTest)
       assert.throws(() => {
@@ -82,7 +84,21 @@ describe('MiElement', () => {
   })
 
   describe('attributes', () => {
-    const attributes = {
+    const properties = {
+      empty: {},
+      string: { type: String },
+      true: { type: Boolean },
+      false: { type: Boolean },
+      undef: {},
+      zero: { type: Number },
+      number: { type: Number },
+      array: { type: Array },
+      object: { type: Object },
+      function: { attribute: false },
+      camelCase: {},
+      kebabCase: {}
+    }
+    const attributeValues = {
       empty: '',
       string: 'hi',
       true: true,
@@ -90,34 +106,30 @@ describe('MiElement', () => {
       undef: undefined,
       zero: 0,
       number: 1,
-      array: [1, 2, 'hi'],
-      obj: { one: 1, two: '2' },
+      array: [1, 2, 'a,b', 'c'],
+      object: JSON.stringify({ one: 1, two: '2' }),
       function: () => 1,
-      camelCase: '',
-      undefString: String,
-      undefNumber: Number,
-      undefBoolean: Boolean
+      camelCase: 'camel',
+      'kebab-case': 'kebab'
     }
-    const isExcludedAttribute = (name) =>
-      [Boolean, Number, String].includes(attributes[name])
 
     let previousAttrs = null
 
     class MiTest extends MiElement {
-      static get attributes() {
-        return attributes
+      static get properties() {
+        return properties
       }
 
       static template = `<pre></pre>`
 
       render() {
         previousAttrs = null
-        this.refs = refsBySelector(this.renderRoot, { pre: 'pre' })
+        this.refs = this.refsBySelector({ pre: 'pre' })
       }
 
-      update(changedAttributes) {
+      update(_changedProps) {
         this.refs.pre.textContent = JSON.stringify(this, null, 2)
-        previousAttrs = { ...previousAttrs, ...changedAttributes }
+        previousAttrs = { ...previousAttrs, ..._changedProps }
         // console.debug('update', previousAttrs)
       }
     }
@@ -133,32 +145,47 @@ describe('MiElement', () => {
       document.body.appendChild(el)
     })
 
-    it('shall assign default attributes', async () => {
-      const collect = Object.keys(attributes).reduce((acc, name) => {
-        acc[name] = el[name]
-        return acc
-      }, {})
-      assert.deepStrictEqual(collect, {
-        ...attributes,
-        undefBoolean: undefined,
-        undefNumber: undefined,
-        undefString: undefined
-      })
-      await nap()
+    it('shall have observable properties', () => {
+      const observedAttributes = MiTest.observedAttributes
+      assert.deepStrictEqual(observedAttributes.sort(), [
+        'array',
+        'camel-case',
+        'empty',
+        'false',
+        'kebab-case',
+        'number',
+        'object',
+        'string',
+        'true',
+        'undef',
+        'zero'
+      ])
     })
 
     it('shall set and get attributes', async () => {
-      for (const [name, value] of Object.entries(attributes)) {
-        if (isExcludedAttribute(name)) continue
-        el.setAttribute(name, value)
+      for (const [name, value] of Object.entries(attributeValues)) {
+        if (properties[name]?.type === Boolean) {
+          if (value) {
+            el.setAttribute(name, '')
+          } else {
+            el.removeAttribute(name)
+          }
+        } else {
+          el.setAttribute(name, value)
+        }
       }
 
-      const collectAttrs = Object.keys(attributes).reduce((acc, name) => {
-        if (!isExcludedAttribute(name)) {
+      await nap()
+
+      const collectAttrs = Object.keys(attributeValues).reduce(
+        (acc, name) => {
           acc[name] = el.getAttribute(name)
+          return acc
+        },
+        {
+          camelcase: el.getAttribute('camelcase')
         }
-        return acc
-      }, {})
+      )
 
       // console.log(el)
       // console.log(collectAttrs)
@@ -166,48 +193,53 @@ describe('MiElement', () => {
       // Take care if using setAttribute() as attribute names are case
       // insensitive "camelCase becomes "camelcase" and only strings and numbers
       // can be passed correctly. Booleans and objects as well as functions are
-      // just stringified, which is not what we intent. Such MiElement hides
-      // these values from being set as attribute.
-      // `null` means that no attribute was set on the node
+      // just stringified, which is not what we intent. `null` means that no
+      // attribute was set on the node
       assert.deepStrictEqual(collectAttrs, {
-        array: null,
+        array: '1,2,a,b,c',
+        camelCase: 'camel',
+        camelcase: 'camel', // camelCase becomes camelcase
         empty: '',
         false: null,
-        function: null,
+        function: '() => 1',
+        'kebab-case': 'kebab',
         number: '1',
-        obj: null,
+        object: '{"one":1,"two":"2"}',
         string: 'hi',
         true: '',
-        undef: null,
-        zero: '0',
-        camelCase: ''
+        undef: 'undefined',
+        zero: '0'
       })
 
-      const collectProps = Object.keys(attributes).reduce((acc, name) => {
+      const collectProps = Object.keys(attributeValues).reduce((acc, name) => {
         acc[name] = el[name]
         return acc
       }, {})
 
+      // console.debug(Object.entries(el._props).map(([k,v])=>[k, v.get()]))
       // console.log(collectProps)
       assert.deepStrictEqual(collectProps, {
-        array: [1, 2, 'hi'],
-        camelCase: '',
+        array: ['1', '2', 'a', 'b', 'c'],
+        camelCase: undefined,
+        'kebab-case': undefined,
         empty: '',
-        false: false,
-        function: attributes.function,
+        false: undefined,
+        function: undefined,
         number: 1,
-        obj: {
-          one: 1,
-          two: '2'
-        },
+        object: { one: 1, two: '2' },
         string: 'hi',
         true: true,
-        undef: undefined,
-        zero: 0,
-        undefBoolean: undefined,
-        undefNumber: undefined,
-        undefString: undefined
+        undef: 'undefined',
+        zero: 0
       })
+
+      assert.deepEqual(el.getAttribute('camel-case'), null)
+      assert.equal(el.camelCase, undefined)
+
+      const newCamel = '🐫Camel'
+      el.setAttribute('camel-case', newCamel)
+      assert.deepEqual(el.getAttribute('camel-case'), newCamel)
+      assert.equal(el.camelCase, newCamel)
 
       await nap()
     })
@@ -215,94 +247,42 @@ describe('MiElement', () => {
     it('shall set and get boolean attributes', async () => {
       document.body.innerHTML = null
       const div = document.createElement('div')
-      div.innerHTML = `<mi-test-attributes false="" true="false"></mi-test-attributes>`
+      div.innerHTML = `<mi-test-attributes false true></mi-test-attributes>`
       el = div.querySelector('mi-test-attributes')
       document.body.appendChild(el)
       await nap(100)
-      assert.strictEqual(el.true, false)
+      assert.strictEqual(el.true, true)
       assert.strictEqual(el.false, true)
-      // attribute true gets removed!
-      assert.strictEqual(el.getAttribute('true'), null)
-      assert.strictEqual(el.getAttribute('false'), '')
+      // attribute false gets removed!
+      el.removeAttribute('false')
+      assert.strictEqual(el.getAttribute('true'), '')
+      assert.strictEqual(el.getAttribute('false'), null)
+      assert.strictEqual(el.true, true)
+      assert.strictEqual(el.false, false)
       await nap()
     })
 
     it('shall resolve camelCased attributes', async () => {
       const camels = '🐪🐫'
-      el.setAttribute('camelcase', camels)
+      el.setAttribute('camel-case', camels)
       assert.strictEqual(el.camelCase, camels)
-      assert.strictEqual(el.getAttribute('camelcase'), camels)
-      assert.strictEqual(el.getAttribute('camelCase'), camels)
+      assert.strictEqual(el.getAttribute('camel-case'), camels)
+      assert.strictEqual(el.getAttribute('camelCase'), null)
       await nap()
     })
 
     it('shall pass previous attributes on render()', async () => {
       await nap()
-      el.setAttribute('camelcase', '🐫')
-      el.setAttribute('cantset', '❌')
+      assert.deepStrictEqual(previousAttrs, {})
+
+      el.setAttribute('camel-case', '🐫')
+      el.setAttribute('camelcase', '❌')
       el.number = 42
       await nap()
       assert.deepStrictEqual(previousAttrs, {
-        camelCase: '',
-        number: 1
+        camelCase: '🐫',
+        number: 42
       })
-    })
-  })
-
-  describe('properties', () => {
-    const attributes = {
-      text: 'Hi'
-    }
-    const properties = {
-      text: 'Hey',
-      num: 0,
-      str: 'foo',
-      bool: true
-    }
-    let previousAttrs = null
-
-    class MiTest extends MiElement {
-      static get attributes() {
-        return attributes
-      }
-      static get properties() {
-        return properties
-      }
-
-      static template = `<pre></pre>`
-
-      render() {
-        this.refs = refsBySelector(this.renderRoot, { pre: 'pre' })
-      }
-
-      update(changedAttributes) {
-        this.refs.pre.textContent = JSON.stringify(this, null, 2)
-        previousAttrs = { ...previousAttrs, ...changedAttributes }
-        console.debug('update', previousAttrs)
-      }
-    }
-
-    const tag = 'mi-test-properties'
-    define(tag, MiTest)
-    let el
-
-    beforeEach(() => {
-      previousAttrs = null
-      document.body.innerHTML = null
-      el = document.createElement(tag)
-      document.body.appendChild(el)
-    })
-
-    it('shall assign default properties', async () => {
-      const collect = Object.keys(properties).reduce((acc, name) => {
-        acc[name] = el[name]
-        return acc
-      }, {})
-      assert.deepStrictEqual(collect, {
-        ...properties,
-        text: 'Hi' // do not overwrite attributes!
-      })
-      await nap()
     })
   })
 
@@ -320,7 +300,7 @@ describe('MiElement', () => {
         this.value++
         setTimeout(() => {
           this.change()
-        }, 25)
+        }, 10)
       }
       change() {
         events.push('change')
@@ -447,6 +427,64 @@ describe('MiElement', () => {
       } catch (err) {
         assert.strictEqual(err.message, 'listener must be a function')
       }
+    })
+  })
+
+  describe('signals', () => {
+    class MiTestSignals extends MiElement {
+      static get properties() {
+        return {
+          count: { type: Number }
+        }
+      }
+
+      static template = html`
+        <div>${(x) => x.count}</div>
+        <button>Increment</button>
+      `
+
+      static createSignal = createSignal
+
+      static shadowRootInit = null
+
+      constructor() {
+        super()
+        // set initial signal value
+        this.count = 0
+      }
+
+      render() {
+        this.refs = this.refsBySelector({ count: 'div', button: 'button' })
+        this.refs.button.addEventListener('click', () => {
+          this.count++
+        })
+        effect(() => {
+          this.refs.count.textContent = this.count
+        })
+      }
+    }
+    let el
+    const tag = 'mi-test-signals'
+    define(tag, MiTestSignals)
+
+    beforeEach(() => {
+      document.body.innerHTML = null
+      el = document.createElement(tag)
+      document.body.appendChild(el)
+    })
+
+    it('shall use signals for properties', async () => {
+      assert.strictEqual(el.count, 0)
+      assert.strictEqual(el.refs.count.textContent, '0')
+      el.refs.button.click()
+      await nap()
+      assert.strictEqual(el.count, 1)
+      assert.strictEqual(el.refs.count.textContent, '1')
+      el.refs.button.click()
+      el.refs.button.click()
+      await nap()
+      assert.strictEqual(el.count, 3)
+      assert.strictEqual(el.refs.count.textContent, '3')
     })
   })
 })

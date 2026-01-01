@@ -1,5 +1,5 @@
 import { describe, it, assert } from 'vitest'
-import { unsafeHtml, esc as html, escHtml } from '../src/escape.js'
+import { unsafeHtml, html, escHtml } from '../src/escape.js'
 
 describe('escape', function () {
   it('shall escape html', () => {
@@ -7,7 +7,10 @@ describe('escape', function () {
   })
 
   it('shall escape html attributes', () => {
-    assert.equal(escHtml(`'"overquoted'`), '&#39;&quot;overquoted&#39;')
+    assert.equal(
+      escHtml(`<a class="&"">'"overquoted'</a>`).toString(),
+      `&lt;a class="&amp;""&gt;'"overquoted'&lt;/a&gt;`
+    )
   })
 
   it('shall escape with template literal', () => {
@@ -68,13 +71,7 @@ describe('escape', function () {
       `
         .replace(/>[\s]*</gm, '><')
         .trim(),
-      '<table><tr>' +
-        '<td>&lt;a1&gt;</td>' +
-        '<td>&#39;a2&#39;</td>' +
-        '</tr><tr>' +
-        '<td>&quot;b1&quot;</td>' +
-        '<td>&amp;b2</td>' +
-        '</tr></table>'
+      '<table><tr><td>&lt;a1&gt;</td><td>\'a2\'</td></tr><tr><td>"b1"</td><td>&amp;b2</td></tr></table>'
     )
   })
 })

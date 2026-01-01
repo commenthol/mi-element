@@ -22,6 +22,8 @@ export class ContextProvider<T> implements HostController {
      * @returns {T|null|undefined}
      */
     get(): T | null | undefined;
+    set value(newValue: T | null | undefined);
+    get value(): T | null | undefined;
     /**
      * @private
      * @param {ContextRequestEvent} ev

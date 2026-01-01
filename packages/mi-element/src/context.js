@@ -55,6 +55,14 @@ export class ContextProvider {
     return this.state.get()
   }
 
+  set value(newValue) {
+    this.set(newValue)
+  }
+
+  get value() {
+    return this.get()
+  }
+
   /**
    * @private
    * @param {ContextRequestEvent} ev

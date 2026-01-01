@@ -3,8 +3,7 @@ import {
   ContextProvider,
   ContextConsumer,
   define,
-  MiElement,
-  refsById
+  MiElement
 } from '../src/index.js'
 import { nap } from './helpers.js'
 
@@ -13,10 +12,10 @@ const log = () => {}
 
 describe('context', () => {
   class MiTestContextProvider extends MiElement {
-    static get attributes() {
+    static get properties() {
       return {
-        context: 'counter',
-        value: 0
+        context: { initial: 'default' },
+        value: { type: Number, initial: 0 }
       }
     }
 
@@ -35,7 +34,7 @@ describe('context', () => {
 
     _providerValue() {
       // creates a new object on every change
-      return { value: this.value, increment: this.increment }
+      return { value: this.value, increment: () => this.increment() }
     }
 
     update() {
@@ -47,21 +46,21 @@ describe('context', () => {
   define('mi-test-context-provider', MiTestContextProvider)
 
   class MiTestContextConsumer extends MiElement {
-    static get attributes() {
+    static get properties() {
       return {
-        context: 'counter'
+        context: { initial: 'default' }
       }
     }
 
-    static shadowRootOptions = null
+    static shadowRootInit = null
 
-    static template = '<span id>0</span>'
+    static template = '<span>0</span>'
 
     render() {
       this.consumer = new ContextConsumer(this, this.context, {
         subscribe: true
       })
-      this.refs = refsById(this.renderRoot)
+      this.refs = this.refsBySelector({ span: 'span' })
       this.addEventListener('click', () => {
         log('click')
         this.consumer.value.increment()

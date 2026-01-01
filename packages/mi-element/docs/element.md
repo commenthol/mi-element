@@ -28,44 +28,32 @@ from the `static attributes` object. From there setters and getters for property
 changes using `.[name] = newValue` instead of `setAttribute(name, newValue)` are
 applied.
 
-Direct properties can also made observable with `static properties` as long as
-not yet being defined within attributes.
 
 ```js
 class extends MiElement {
   /**
-   * Declare observable attributes and their default values with this getter.
-   * Do not use `static attribute = { text: 'Hi' }` as components attributes 
+   * Declare observable attributes with this getter. 
+   * Use `true` to define boolean attributes!
+   * Do not use `static attribute = { text: false }` as components attributes 
    * will use a shallow copy only. With the getter we always get a real "deep" 
    * copy.
    * 
-   * For yet to defined numbers, boolean or strings use `Number`, `Boolean`, 
-   * `String`. Attributes are accessible via `.[name]` or `.getAttribute(name)`.
    * Avoid using attributes which are HTMLElement properties e.g. `className`.
-   */
-  static get attributes () {
-    return {
-      text: 'Hi',
-      // A yet to be defined boolean value
-      focus: Boolean
-    }
-  }
-  /**
-   * Declare observable properties and their default values.
-   * Any changed value of a property, using `.[name] = nextValue` assignment, 
-   * will cause a rerender. 
-   * In case of objects or arrays consider changing the reference with the 
-   * spread operator like `{...obj}` or `[...arr]` creating a new reference.
-   * If name is already declared in `attributes` it will be ignored. 
+   * camelCased attributes will be made observable using its kebab-cased name.
    */
   static get properties () {
-    return { prop: 0 }
+    return {
+      text: {},
+      focus: { type: Boolean },
+      // define property only
+      numberPropOnly: { attribute: false, type: Number }
+    }
   }
-  constructor() {
-    super()
-    // optionally declare "non observable" and internal properties
-    this.foo = 'foo'
-  }
+
+  /**
+   * optionally declare "non observable" or internal properties
+   */
+  foo = 'foo'
 }
 ```
 
@@ -74,10 +62,10 @@ class extends MiElement {
 Invoked when a component is being added to the document's DOM.
 
 Micro components create `this.renderRoot` (typically same as `this.shadowRoot`
-for open components) using `this.attachShadow(shadowRootOptions)`. Shadow root
-options are taken from the components `static shadowRootOptions = { mode: 'open'
+for open components) using `this.attachShadow(shadowRootInit)`. Shadow root
+options are taken from the components `static shadowRootInit = { mode: 'open'
 }`. In advanced cases where no shadow root is desired, set `static
-shadowRootOptions = null`
+shadowRootInit = null`
 
 The most common use case is adding event listeners to external nodes in
 `connectedCallback()`. Typically, anything done in `connectedCallback()` should
@@ -90,7 +78,7 @@ Then the first `render()` is issued with a `requestUpdate()`
 class extends MiElement {
   // { mode: 'open' } is the default shadow root option 
   // use `null` for no shadow root or { mode: 'closed' } for closed mode
-  static shadowRootOptions = { mode: 'open' }
+  static shadowRootInit = { mode: 'open' }
 
   connectedCallback() {
     super.connectedCallback() // don't forget to call the super method
@@ -160,24 +148,19 @@ flowchart TD
   disconnectedCallback("disconnectedCallback()")
   render("render()")
   requestUpdate("requestUpdate()")
-  shouldUpdate("shouldUpdate(changedAttributes)")
   update("update(changedAttributes)")
 
-  setAttribute("setAttribute(name, newVale)")
-  setProperty(".[name] = newValue")
+  setAttribute("el.setAttribute(name, newVale)")
+  setProperty("el.[name] = newValue")
 
   START --> constructoR
   constructoR -.->|"mount to DOM"| connectedCallback
   connectedCallback --> render
   render --> requestUpdate
-  requestUpdate -.->|async| shouldUpdate
-  shouldUpdate -->|true| update
+  requestUpdate -.->|async| update
 
-  setAttribute -->|"attributeChangedCallback"| requestUpdate
-  setProperty --> requestUpdate
-
-  update -.->|change| setAttribute
-  update -.->|change| setProperty
+  setAttribute -->|"attributeChangedCallback()"| requestUpdate
+  setProperty -->requestUpdate
 
   connectedCallback -.->|"unmount from DOM"| disconnectedCallback
   disconnectedCallback --> END
@@ -189,8 +172,8 @@ A micro component usually implements `render()` and `update()`:
 import { define, MiElement, refsBySelector } from 'mi-element'
 
 class Counter extends MiElement {
-  static get attributes() {
-    return { value: 0 }
+  static get properties() {
+    return { value: { type: Number } }
   }
 
   // define the innerHTML template for the component
@@ -226,20 +209,19 @@ class Counter extends MiElement {
 ## render()
 
 Initial rendering of the component. Try to render the component only once!
-If you need re-rendering by recrating the DOM do this outside of `render()`
 
 Within the `render()` method, bear in mind to:
 
 - Avoid changing the component's state.
 - Avoid producing any side effects.
-- Use only the component's attributes as input.
+- Use only the component's properties as input.
 
 !!! WARNING XSS - Cross-Site Scripting
     
     Using [`innerHTML`][innerHTML] to create the components DOM is susceptible to
     [XSS][XSS] attacks in case that user-supplied data contains valid HTML markup.
 
-In all other cases you may consider the <code>esc``</code> template literal or
+In all other cases you may consider the <code>html``</code> template literal or
 `escHtml()` from the "mi-element" import, which escapes user-supplied data.
 
 [innerHTML]: https://developer.mozilla.org/en-US/docs/Web/API/Element/innerHTML
@@ -287,19 +269,19 @@ adding `id` attributes to the nodes where updates shall happen or event
 listeners must be applied.
 
 ```js
-import { MiElement, define, refsById } from 'mi-element'
+import { MiElement, define } from 'mi-element'
 
 class Counter extends MiElement {
   static template = `
   <button id>Count</button>
-  <p>Counter value: <span id="count">0</span></p>
+  <p>Counter value: <span>0</span></p>
   `
 
   render() {
     // template is already rendered on `this.renderRoot`
 
-    // get refs though `refsById` of `refsBySelector`
-    this.refs = refsById(this.renderRoot)
+    // get refs though `refsBySelector`
+    this.refs = this.refsBySelector({ button: 'button', count: 'p > span'})
     // this.refs == {button: <button>, count: <span>}
   }
 }
@@ -315,6 +297,11 @@ rendered elements as much as possible.
 
 ```js
 class Counter extends MiElement {
+  render() {
+    // ...
+    this.update()
+  }
+
   // ...
   update() {
     this.refs.count.textContent = this.value
@@ -327,18 +314,18 @@ any changed attributes are passed.
 
 To mitigate [XSS][] attacks prefer the use of `.textContent` and avoid
 ~~`.innerHTML`~~. For attribute changes use `.setAttribute(name, newValue)`.
-Both `.textContent` and `setAttribute()` provide escaping for you. 
-
 
 For finer control on updates the use of signals is encouraged. With this there
-is no need to add logic to `shouldUpdate()` or `update()`.
+is no need to add logic to `update()`.
 
 ```js
 import { MiElement, Signal } from 'mi-element'
 
 class Counter extends MiElement {
-  static get attributes() {
-    return { value: 0 }
+  static get properties() {
+    return { 
+      value: { type: Number } 
+     }
   }
 
   static template = `
@@ -346,8 +333,15 @@ class Counter extends MiElement {
   <p>Counter value: <span>0</span></p>
   `
 
+  constructor() {
+    super()
+    // set initial values
+    this.value = 0
+  }
+
+
   render() {
-    const refs = refsBySelector(this.renderRoot, {
+    const refs = this.refsBySelector({
       button: 'button',
       count: 'span'
     })
@@ -364,13 +358,6 @@ class Counter extends MiElement {
   }
 }
 ```
-
-## shouldUpdate(changedAttributes)
-
-Convenience method in order to be able to decide on the changed attributes,
-whether `update()` should be called or not.
-
-Return `true` if component should be updated. 
 
 ## on(eventName, listener, \[node\])
 

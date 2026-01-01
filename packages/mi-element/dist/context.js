@@ -17,6 +17,12 @@ class ContextProvider {
   get() {
     return this.state.get();
   }
+  set value(newValue) {
+    this.set(newValue);
+  }
+  get value() {
+    return this.get();
+  }
   onContextRequest=ev => {
     if (ev.context !== this.context) return;
     let unsubscribe;

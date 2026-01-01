@@ -1,9 +1,12 @@
 import { camelToKebabCase } from './case.js';
 
-const classMap = map => {
-  const acc = [];
-  for (const [name, value] of Object.entries(map ?? {})) value && acc.push(name);
-  return acc.join(' ');
+const classNames = (...args) => {
+  const classList = [];
+  return args.forEach(arg => {
+    arg && ('string' == typeof arg ? classList.push(arg) : Array.isArray(arg) ? classList.push(classNames(...arg)) : 'object' == typeof arg && Object.entries(arg).forEach(([key, value]) => {
+      value && classList.push(key);
+    }));
+  }), classList.join(' ');
 }, styleMap = (map, options) => {
   const {unit: unit = "px"} = options || {}, acc = [];
   for (const [name, value] of Object.entries(map ?? {})) {
@@ -23,4 +26,8 @@ function addGlobalStyles(renderRoot) {
   })), globalSheets));
 }
 
-export { addGlobalStyles, classMap, styleMap };
+const css = (strings, ...values) => String.raw({
+  raw: strings
+}, ...values);
+
+export { addGlobalStyles, classNames, css, styleMap };

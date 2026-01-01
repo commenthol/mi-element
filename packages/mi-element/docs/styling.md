@@ -2,7 +2,7 @@
 
 <!-- !toc (minlevel=2) -->
 
-- [classMap](#classmap)
+- [classNames](#classnames)
 - [styleMap](#stylemap)
 - [addGlobalStyles](#addglobalstyles)
 
@@ -10,16 +10,16 @@
 
 # Styling
 
-## classMap
+## classNames
 
 Obtain a class string from an object. Only class-names with trueish values are
 returned.
 
 ```js
-import { classMap } from 'mi-element'
+import { classNames } from 'mi-element'
 
-const className = classMap({ enabled: true, hidden: '', number: 1 })
-//> className == 'enabled number'
+const className = classNames({ enabled: true, hidden: '', number: 1 }, 'always')
+//> className == 'enabled number always'
 ```
 
 ## styleMap
@@ -74,4 +74,16 @@ customElements.define(
     }
   }
 )
+
+// with MiElement 
+import { define, MiElement } from 'mi-element'
+
+define('x-with-global-styles', class extends MiElement {
+  static useGlobalStyles() {
+    return true
+  }
+
+  static template = '<h1>Hello World</h1>'
+})
+
 ```

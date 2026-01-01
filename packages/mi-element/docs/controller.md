@@ -55,6 +55,10 @@ define(
       this.controller = new ClockController(this)
     }
 
+    render() {
+      this.update()
+    }
+
     update() {
       // get value from controller
       const { value } = this.controller

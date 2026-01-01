@@ -1,4 +1,4 @@
-import { define, MiElement, refsById } from '../../dist/index.js'
+import { define, MiElement } from '../../dist/index.js'
 import './todo-input.js'
 import './todo-item.js'
 
@@ -10,7 +10,7 @@ const retrieve = () => {
 }
 
 class TodoApp extends MiElement {
-  static shadowRootOptions = null
+  static shadowRootInit = null
 
   static template = `
   <button id="clear">Clear completed</button>
@@ -39,7 +39,12 @@ class TodoApp extends MiElement {
   }
 
   render() {
-    this.refs = refsById(this.renderRoot)
+    this.refs = this.refsBySelector({
+      input: '#input',
+      listContainer: '#list-container',
+      clear: '#clear',
+      store: '#store'
+    })
     this.refs.input.addEventListener('onSubmit', this.addItem)
     this.refs.clear.addEventListener('click', () => {
       this._list = this._list.filter((item) => !item.checked)

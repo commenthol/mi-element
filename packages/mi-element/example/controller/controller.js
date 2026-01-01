@@ -1,4 +1,4 @@
-import { define, MiElement } from '../../dist/index.js'
+import { define, MiElement } from '../../src/index.js'
 
 class ClockController {
   /**

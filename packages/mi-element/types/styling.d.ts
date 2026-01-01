@@ -9,9 +9,7 @@
  * }
  */
 export function addGlobalStyles(renderRoot: ShadowRoot): void;
-export function classMap(map: {
-    [name: string]: string | boolean | number;
-}): string;
+export function classNames(...args: any[]): string;
 export function styleMap(map: {
     [name: string]: string | number | undefined | null;
 }, options?: {

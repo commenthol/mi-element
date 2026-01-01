@@ -24,7 +24,7 @@ setting objects or functions either through `el.setAttribute(name, value)` or
 properties `el[name] = value`.
 
 Furthermore all observed attributes have a reactive behavior through the use of
-signals and effects (loosely) following the 
+signals and effects (loosely) following the
 [TC39 JavaScript Signals standard proposal][].
 
 # Usage
@@ -38,7 +38,8 @@ npm i mi-element
 ```js
 /** @file ./mi-counter.js */
 
-import { MiElement, define, refsById, Signal } from 'mi-element'
+import { MiElement, define, Signal } from 'mi-element'
+const { effect, createSignal } = Signal
 
 // define your Component
 class MiCounter extends MiElement {
@@ -46,25 +47,27 @@ class MiCounter extends MiElement {
   <style>
     :host { font-size: 1.25rem; }
   </style>
-  <div id aria-label="Counter value">0</div>
-  <button id="increment" aria-label="Increment counter"> + </button>
+  <div aria-label="Counter value">0</div>
+  <button aria-label="Increment counter"> + </button>
   `
 
-  static get attributes() {
+  static get properties() {
     // declare reactive attribute(s)
-    return { count: 0 }
+    return { count: { type: Number, initial: 0 } }
   }
+
+  static createSignal = createSignal
 
   // called by connectedCallback()
   render() {
     // gather refs from template (here by id)
-    this.refs = refsById(this.renderRoot)
+    this.refs = this.refsBySelector({ increment: 'button', div: 'div' })
     // apply event listeners
     this.refs.increment.addEventListener('click', () => {
       // change observed and reactive attribute...
       this.count++
     })
-    Signal.effect(() => {
+    effect(() => {
       // ...triggers update on every change of `this.count`
       this.refs.div.textContent = this.count
     })
@@ -114,7 +117,6 @@ MIT licensed
 [Web Components]: https://developer.mozilla.org/en-US/docs/Web/API/Web_components/Using_custom_elements#custom_element_lifecycle_callbacks
 [TC39 JavaScript Signals standard proposal]: https://github.com/tc39/proposal-signals
 [krausest/js-framework-benchmark]: https://github.com/krausest/js-framework-benchmark
-
 [npm-badge]: https://badgen.net/npm/v/mi-element
 [npm]: https://www.npmjs.com/package/mi-element
 [types-badge]: https://badgen.net/npm/types/mi-element

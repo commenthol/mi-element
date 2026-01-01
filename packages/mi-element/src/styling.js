@@ -1,17 +1,27 @@
 import { camelToKebabCase } from './case.js'
 
 /**
- * Construct className based on true-ish values of map
- * @param {{[name: string]: string | boolean | number}} map
+ * conditionally joining classNames
+ * @param  {...any} args
  * @returns {string}
  */
-export const classMap = (map) => {
-  /** @type {string[]} */
-  const acc = []
-  for (const [name, value] of Object.entries(map ?? {})) {
-    if (value) acc.push(name)
-  }
-  return acc.join(' ')
+export const classNames = (...args) => {
+  const classList = []
+  args.forEach((arg) => {
+    if (!arg) return
+    if (typeof arg === 'string') {
+      classList.push(arg)
+    } else if (Array.isArray(arg)) {
+      classList.push(classNames(...arg))
+    } else if (typeof arg === 'object') {
+      Object.entries(arg).forEach(([key, value]) => {
+        if (value) {
+          classList.push(key)
+        }
+      })
+    }
+  })
+  return classList.join(' ')
 }
 
 /**

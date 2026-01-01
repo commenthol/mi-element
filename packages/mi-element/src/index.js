@@ -10,21 +10,11 @@ export {
  * @typedef {import('./element.js').HostController} HostController
  */
 export { MiElement, convertType, define } from './element.js'
-export { unsafeHtml, esc, escHtml } from './escape.js'
-export { refsById, refsBySelector } from './refs.js'
-/**
- * @template T
- * @typedef {import('mi-signal').SignalOptions<T>} SignalOptions<T>
- */
-export {
-  default as Signal,
-  State,
-  createSignal,
-  effect,
-  Computed
-} from 'mi-signal'
+export { unsafeHtml, html, escHtml } from './escape.js'
+export { refsBySelector } from './refs.js'
 /**
  * @typedef {import('./store.js').Action} Action
  */
 export { Store } from './store.js'
-export { classMap, styleMap, addGlobalStyles } from './styling.js'
+export { classNames, styleMap, addGlobalStyles, css } from './styling.js'
+export { default as Signal } from 'mi-signal'

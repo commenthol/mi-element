@@ -11,9 +11,20 @@ export const unsafeHtml = (str) => new UnsafeHtml(str)
 const escMap = {
   '&': '&amp;',
   '<': '&lt;',
-  '>': '&gt;',
-  "'": '&#39;',
-  '"': '&quot;'
+  '>': '&gt;'
+}
+
+let esc = (string) => {
+  return string.replace(/&amp;/g, '&').replace(/[&<>]/g, (tag) => escMap[tag])
+}
+
+if (typeof document !== 'undefined') {
+  // in browser environment, use DOM to escape
+  esc = (string) => {
+    const div = document.createElement('div')
+    div.textContent = string
+    return div.innerHTML
+  }
 }
 
 /**
@@ -26,13 +37,7 @@ const escMap = {
  */
 export const escHtml = (string) =>
   // @ts-expect-error
-  string instanceof UnsafeHtml
-    ? string
-    : unsafeHtml(
-        ('' + string)
-          .replace(/&amp;/g, '&')
-          .replace(/[&<>'"]/g, (tag) => escMap[tag])
-      )
+  string instanceof UnsafeHtml ? string : unsafeHtml(esc('' + string))
 
 /**
  * template literal to HTML escape all values preventing XSS;
@@ -41,11 +46,10 @@ export const escHtml = (string) =>
  * @param  {...any} values
  * @returns {string}
  * @example
- * const data = ['<foo', 'bar>']
- * const list = esc`<ul>${data.map(item => esc`<li>${item}</li>`)}</ul>`
+ * const list = html`<ul>${['<foo', 'bar>'].map(item => html`<li>${item}</li>`)}</ul>`
  * // '<ul><li>&lt;foo</li><li>bar&gt;</li></ul>'
  */
-export const esc = (strings, ...values) =>
+export const html = (strings, ...values) =>
   unsafeHtml(
     String.raw(
       { raw: strings },
