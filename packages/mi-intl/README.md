@@ -34,9 +34,14 @@ define('mi-intl-provider', MiIntlProvider)
 define(
   'mi-message',
   class extends MiIntlMessage {
-    static get attributes() {
-      return { label: String, value: String }
+    static get properties () {
+      return { label: {}, value: {} }
     }
+
+    render() {
+      this.update()
+    }
+
     update() {
       // this.t() is provided by MiIntlMessage
       this.renderRoot.textContent = this.t(this.label, { value: this.value })
@@ -59,6 +64,7 @@ define(
       this.ref.addEventListener('change', (ev) => {
         this.#context.get().changeLanguage(ev.target.value).catch(console.error)
       })
+      this.update()
     }
 
     update() {
@@ -75,8 +81,8 @@ define(
   <body>
     <mi-intl-provider
       version="1.0.0"
-      supportedLngs="en,en-US,es"
-      localesPath="/locales/{lng}/{ns}.json?version={version}"
+      supported-lngs="en,en-US,es"
+      locales-path="/locales/{lng}/{ns}.json?version={version}"
     >
       <mi-language-selector>
         <select>

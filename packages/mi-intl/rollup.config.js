@@ -35,17 +35,17 @@ const tasks = [
       })
     ]
   },
-  {
-    input: 'src/index.js',
-    output: [
-      {
-        file: './dist/index.min.js',
-        format: 'es',
-        sourcemap: false
-      }
-    ],
-    plugins: [terser({ ...terserOptsDeadCode })]
-  }
+  // {
+  //   input: 'src/index.js',
+  //   output: [
+  //     {
+  //       file: './dist/index.min.js',
+  //       format: 'es',
+  //       sourcemap: false
+  //     }
+  //   ],
+  //   plugins: [terser({ ...terserOptsDeadCode })]
+  // }
 ]
 
 export default tasks

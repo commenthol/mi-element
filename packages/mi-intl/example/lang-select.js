@@ -1,4 +1,4 @@
-import { define, MiElement, esc as html, unsafeHtml } from 'mi-element'
+import { define, MiElement, html, unsafeHtml } from 'mi-element'
 import { IntlConsumer } from '../src/index.js'
 
 function flagEmoji(countryCode) {

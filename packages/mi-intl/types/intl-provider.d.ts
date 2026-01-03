@@ -2,44 +2,50 @@
 /** @typedef {import('./types.js').IntlContext} IntlContext */
 export const INTL_CONTEXT: "mi-intl";
 export class MiIntlProvider extends MiElement {
-    static get attributes(): {
-        /** translation version */
-        version: string;
-        /** pre-selected language */
-        lng: StringConstructor;
-        /** default namespace */
-        defaultNs: string;
-        /** used namespaces, comma separated */
-        ns: string;
-        /** supported languages, comma separated */
-        supportedLngs: string;
-        /** path for loading resources */
-        localesPath: string;
-        /** use translation label */
-        useLabel: BooleanConstructor;
-        /** debugging support */
-        debug: boolean;
-    };
     static get properties(): {
-        loading: boolean;
+        /** translation version */
+        version: {
+            initial: string;
+        };
+        /** pre-selected language */
+        lng: {
+            initial: string;
+        };
+        /** default namespace */
+        defaultNs: {
+            initial: string;
+        };
+        /** used namespaces, comma separated */
+        ns: {
+            type: ArrayConstructor;
+            initial: string;
+        };
+        /** supported languages, comma separated */
+        supportedLngs: {
+            type: ArrayConstructor;
+            initial: string;
+        };
+        /** path for loading resources */
+        localesPath: {
+            initial: string;
+        };
+        /** use translation label */
+        useLabel: {
+            type: BooleanConstructor;
+            initial: boolean;
+        };
+        /** debugging support */
+        debug: {
+            type: BooleanConstructor;
+            initial: boolean;
+        };
+        /** loading state */
+        loading: {
+            type: BooleanConstructor;
+            attribute: boolean;
+        };
     };
     static template: string;
-    /** @type {string} */
-    version: string;
-    /** @type {string} */
-    lng: string;
-    /** @type {string} */
-    defaultNs: string;
-    /** @type {string} */
-    ns: string;
-    /** @type {string} */
-    supportedLngs: string;
-    /** @type {string} */
-    localesPath: string;
-    /** @type {boolean} */
-    useLabel: boolean;
-    /** @type {boolean} */
-    debug: boolean;
     /**
      * @param {I18nOptions} options
      */

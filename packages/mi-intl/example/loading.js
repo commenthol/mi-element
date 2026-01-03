@@ -1,4 +1,4 @@
-import { define, MiElement, esc as html } from 'mi-element'
+import { define, MiElement, html } from 'mi-element'
 import { IntlConsumer } from '../src/index.js'
 
 define(

@@ -1,6 +1,6 @@
 {
   "name": "mi-intl",
-  "version": "0.6.7",
+  "version": "0.7.0-0",
   "description": "i18n for mi-element",
   "keywords": [
     "i18n",
@@ -27,10 +27,6 @@
       "development": "./src/index.js",
       "types": "./types/index.d.ts",
       "default": "./dist/index.js"
-    },
-    "./min": {
-      "types": "./types/index.d.ts",
-      "default": "./dist/index.min.js"
     }
   },
   "main": "src/index.js",
@@ -41,7 +37,7 @@
   ],
   "scripts": {
     "all": "npm-run-all pretty lint test build types",
-    "build": "rimraf dist && rollup -c && gzip -k dist/index.min.js && ls -al dist && rimraf dist/index.min.js.gz",
+    "build": "rimraf dist && rollup -c",
     "dev": "npm run test:browser",
     "docs": "cd docs; for f in *.md; do markedpp -s -i $f; done",
     "example": "vite --force --open /example/",

@@ -87,9 +87,18 @@ describe('html', () => {
 
   it('shall toggle attribute', () => {
     const isOn = createSignal(false)
-    render(body, () => html`<div data-test="${isOn.value ? 'on' : 'off'}" @click=${()=> {
-      isOn.value = !isOn.value
-    }}>State: ${isOn.value ? 'on' : 'off'}</div>`)
+    render(
+      body,
+      () =>
+        html`<div
+          data-test="${isOn.value ? 'on' : 'off'}"
+          @click=${() => {
+            isOn.value = !isOn.value
+          }}
+        >
+          State: ${isOn.value ? 'on' : 'off'}
+        </div>`
+    )
     let div = body.querySelector('div')
     expect(div.getAttribute('data-test')).toBe('off')
     div.dispatchEvent(new Event('click'))

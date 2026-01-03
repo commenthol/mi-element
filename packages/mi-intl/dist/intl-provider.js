@@ -5,29 +5,40 @@ import { I18n } from './i18n.js';
 const INTL_CONTEXT = 'mi-intl', requestAnimationFrameP = () => new Promise(resolve => requestAnimationFrame(resolve));
 
 class MiIntlProvider extends MiElement {
-  version='';
-  lng='';
-  defaultNs='';
-  ns='';
-  supportedLngs='';
-  localesPath='';
-  useLabel=!1;
-  debug=!1;
-  static get attributes() {
-    return {
-      version: '',
-      lng: String,
-      defaultNs: 'translations',
-      ns: 'translations',
-      supportedLngs: '',
-      localesPath: '/locales/{lng}/{ns}.json?v={version}',
-      useLabel: Boolean,
-      debug: !1
-    };
-  }
   static get properties() {
     return {
-      loading: !1
+      version: {
+        initial: ''
+      },
+      lng: {
+        initial: ''
+      },
+      defaultNs: {
+        initial: 'translations'
+      },
+      ns: {
+        type: Array,
+        initial: 'translations'
+      },
+      supportedLngs: {
+        type: Array,
+        initial: ''
+      },
+      localesPath: {
+        initial: '/locales/{lng}/{ns}.json?v={version}'
+      },
+      useLabel: {
+        type: Boolean,
+        initial: !1
+      },
+      debug: {
+        type: Boolean,
+        initial: !1
+      },
+      loading: {
+        type: Boolean,
+        attribute: !1
+      }
     };
   }
   static template='<slot></slot>';
@@ -54,9 +65,14 @@ class MiIntlProvider extends MiElement {
     })), await requestAnimationFrameP(), await requestAnimationFrameP(), this.loading = !1;
   }
   render() {
-    const supportedLngs = this.supportedLngs.split(','), ns = this.ns.split(',');
+    const {version: version, lng: lng, defaultNs: defaultNs, localesPath: localesPath, useLabel: useLabel, debug: debug, supportedLngs: supportedLngs, ns: ns} = this;
     this.i18n = new I18n({
-      ...this,
+      version: version,
+      lng: lng,
+      defaultNs: defaultNs,
+      localesPath: localesPath,
+      useLabel: useLabel,
+      debug: debug,
       supportedLngs: supportedLngs,
       ns: ns
     }), this.provider = new ContextProvider(this, "mi-intl", this._contextValue()), 

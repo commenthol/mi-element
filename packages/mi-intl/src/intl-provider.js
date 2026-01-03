@@ -10,47 +10,26 @@ const requestAnimationFrameP = () =>
   new Promise((resolve) => requestAnimationFrame(resolve))
 
 export class MiIntlProvider extends MiElement {
-  /** @type {string} */
-  version = ''
-  /** @type {string} */
-  lng = ''
-  /** @type {string} */
-  defaultNs = ''
-  /** @type {string} */
-  ns = ''
-  /** @type {string} */
-  supportedLngs = ''
-  /** @type {string} */
-  localesPath = ''
-  /** @type {boolean} */
-  useLabel = false
-  /** @type {boolean} */
-  debug = false
-
-  static get attributes() {
-    return {
-      /** translation version */
-      version: '',
-      /** pre-selected language */
-      lng: String,
-      /** default namespace */
-      defaultNs: 'translations',
-      /** used namespaces, comma separated */
-      ns: 'translations',
-      /** supported languages, comma separated */
-      supportedLngs: '',
-      /** path for loading resources */
-      localesPath: '/locales/{lng}/{ns}.json?v={version}',
-      /** use translation label */
-      useLabel: Boolean,
-      /** debugging support */
-      debug: false
-    }
-  }
-
   static get properties() {
     return {
-      loading: false
+      /** translation version */
+      version: { initial: '' },
+      /** pre-selected language */
+      lng: { initial: '' },
+      /** default namespace */
+      defaultNs: { initial: 'translations' },
+      /** used namespaces, comma separated */
+      ns: { type: Array, initial: 'translations' },
+      /** supported languages, comma separated */
+      supportedLngs: { type: Array, initial: '' },
+      /** path for loading resources */
+      localesPath: { initial: '/locales/{lng}/{ns}.json?v={version}' },
+      /** use translation label */
+      useLabel: { type: Boolean, initial: false },
+      /** debugging support */
+      debug: { type: Boolean, initial: false },
+      /** loading state */
+      loading: { type: Boolean, attribute: false }
     }
   }
 
@@ -99,10 +78,26 @@ export class MiIntlProvider extends MiElement {
   }
 
   render() {
-    const supportedLngs = this.supportedLngs.split(',')
-    const ns = this.ns.split(',')
-
-    this.i18n = new I18n({ ...this, supportedLngs, ns })
+    const {
+      version,
+      lng,
+      defaultNs,
+      localesPath,
+      useLabel,
+      debug,
+      supportedLngs,
+      ns
+    } = this
+    this.i18n = new I18n({
+      version,
+      lng,
+      defaultNs,
+      localesPath,
+      useLabel,
+      debug,
+      supportedLngs,
+      ns
+    })
 
     this.provider = new ContextProvider(
       this,

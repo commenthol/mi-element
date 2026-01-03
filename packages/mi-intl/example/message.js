@@ -15,8 +15,12 @@ const safeJson = (any) => {
 define(
   'mi-message',
   class extends MiIntlMessage {
-    static get attributes() {
-      return { label: String, value: String, html: false }
+    static get properties() {
+      return {
+        label: {},
+        value: {},
+        html: { type: Boolean, initial: false }
+      }
     }
 
     update() {

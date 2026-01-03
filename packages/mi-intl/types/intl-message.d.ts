@@ -7,8 +7,8 @@
  *
  * define('mi-message',
  *   class extends MiIntlMessage {
- *     static get attributes() {
- *       return { label: String, value: String }
+ *     static get properties() {
+ *       return { label: {}, value: {} }
  *     }
  *     update() {
  *       this.renderRoot.textContent = this.t(this.label, this.value)

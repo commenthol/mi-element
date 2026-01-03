@@ -1,4 +1,4 @@
-import { nodeResolve } from '@rollup/plugin-node-resolve'
+// import { nodeResolve } from '@rollup/plugin-node-resolve'
 import terser from '@rollup/plugin-terser'
 
 const terserOptsDeadCode = {
@@ -36,20 +36,20 @@ const tasks = [
       })
     ]
   },
-  {
-    input: 'src/index.js',
-    output: [
-      {
-        file: './dist/index.min.js',
-        format: 'es',
-        sourcemap: true
-      }
-    ],
-    plugins: [
-      nodeResolve(),
-      terser({ ...terserOptsDeadCode })
-    ]
-  }
+  // {
+  //   input: 'src/index.js',
+  //   output: [
+  //     {
+  //       file: './dist/index.min.js',
+  //       format: 'es',
+  //       sourcemap: true
+  //     }
+  //   ],
+  //   plugins: [
+  //     nodeResolve(),
+  //     terser({ ...terserOptsDeadCode })
+  //   ]
+  // }
 ]
 
 export default tasks
