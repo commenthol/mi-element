@@ -1,3 +1,34 @@
+/**
+ * Post-processing of rendered nodes to handle special attributes:
+ *
+ * - `?attr=${boolean}`  -> boolean attribute
+ * - `.prop=${objectOrAnyValue}` -> property binding for objects or any value
+ * - `@event=${(e) => {}}` -> event listener with templated inline function
+ * - `@event="handlerName"` -> event listener using handler name from handlers object
+ * - `ref="refName"` -> element reference collected and returned
+ *
+ * NOTE: For all attributes and event names always use kebab-case. For properties it will be converted to camelCase.
+ * Attributes starting with `?`, `@`, or `.` are removed from DOM after processing
+ *
+ * @param {Element} node
+ * @param {Record<string, Function>|HTMLElement} [handlers={}] event handlers or HTMLElement for method lookup
+ * @returns {Record<string, Element>} references collected
+ */
+export function renderAttrs(node: Element, handlers?: Record<string, Function> | HTMLElement): Record<string, Element>;
+export const globalRenderCache: RenderCache;
 export function unsafeHtml(str: string): string;
 export function escHtml(string: string): string;
 export function html(strings: TemplateStringsArray, ...values: any[]): string;
+/**
+ * A cache for rendering values to avoid keeping them in memory too long
+ */
+declare class RenderCache {
+    cnt: number;
+    map: Map<any, any>;
+    cache: WeakMap<WeakKey, any>;
+    _inc(): number;
+    clear(): void;
+    set(value: any): string;
+    get(key: any): any;
+}
+export {};

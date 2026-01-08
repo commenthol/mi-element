@@ -116,6 +116,12 @@ export class MiElement extends HTMLElement {
      */
     render(): void;
     /**
+     * Post-processing of rendered nodes to handle special attributes:
+     * @param {Record<string, Function>|HTMLElement} [handlers=this] event handlers or HTMLElement for method lookup
+     * @returns {Record<string, Element>} references collected
+     */
+    renderAttrs(handlers?: Record<string, Function> | HTMLElement): Record<string, Element>;
+    /**
      * called every time the components needs a render update
      * @param {Record<string, any>} [_changedProps] previous values of changed
      * properties (attributes)

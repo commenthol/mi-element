@@ -1,7 +1,9 @@
+import { createSignal } from 'mi-signal'
 import { kebabToCamelCase, camelToKebabCase } from './case.js'
 import { addGlobalStyles } from './styling.js'
 import { refsBySelector } from './refs.js'
-import { createSignal } from 'mi-signal'
+import { toNumber, toJson } from './utils.js'
+import { renderAttrs } from './escape.js'
 
 /**
  * Mapping of attribute names to property names
@@ -240,6 +242,15 @@ export class MiElement extends HTMLElement {
   }
 
   /**
+   * Post-processing of rendered nodes to handle special attributes:
+   * @param {Record<string, Function>|HTMLElement} [handlers=this] event handlers or HTMLElement for method lookup
+   * @returns {Record<string, Element>} references collected
+   */
+  renderAttrs(handlers = this) {
+    return renderAttrs(this.renderRoot, handlers)
+  }
+
+  /**
    * called every time the components needs a render update
    * @param {Record<string, any>} [_changedProps] previous values of changed
    * properties (attributes)
@@ -382,19 +393,6 @@ const renderTemplate = (element) => {
   const el = document.createElement('template')
   el.innerHTML = element.template
   element.template = el
-}
-
-const toNumber = (any) => {
-  const n = Number(any)
-  return isNaN(n) ? 0 : n
-}
-
-const toJson = (any) => {
-  try {
-    return JSON.parse(any)
-  } catch {
-    return
-  }
 }
 
 /**

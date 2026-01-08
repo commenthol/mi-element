@@ -1,10 +1,14 @@
+import { createSignal } from 'mi-signal';
+
 import { kebabToCamelCase, camelToKebabCase } from './case.js';
 
 import { addGlobalStyles } from './styling.js';
 
 import { refsBySelector } from './refs.js';
 
-import { createSignal } from 'mi-signal';
+import { toNumber, toJson } from './utils.js';
+
+import { renderAttrs } from './escape.js';
 
 const nameMap = {
   class: 'className',
@@ -84,6 +88,9 @@ class MiElement extends HTMLElement {
     }
   }
   render() {}
+  renderAttrs(handlers = this) {
+    return renderAttrs(this.renderRoot, handlers);
+  }
   update(_changedProps) {}
   on(eventName, listener, node = this) {
     node.addEventListener(eventName, listener), this.#disposers.add(() => node.removeEventListener(eventName, listener));
@@ -132,15 +139,6 @@ const define = (tagName, elementClass, options) => {
   if (element.template instanceof HTMLTemplateElement) return;
   const el = document.createElement('template');
   el.innerHTML = element.template, element.template = el;
-}, toJson = any => {
-  try {
-    return JSON.parse(any);
-  } catch {
-    return;
-  }
-}, convertType = (value, type) => type === Boolean ? null !== value : type === Number ? (any => {
-  const n = Number(any);
-  return isNaN(n) ? 0 : n;
-})(value) : type === Array ? toJson(value) ?? value.split(',').map(v => v.trim()) : type === Object ? toJson(value) : value;
+}, convertType = (value, type) => type === Boolean ? null !== value : type === Number ? toNumber(value) : type === Array ? toJson(value) ?? value.split(',').map(v => v.trim()) : type === Object ? toJson(value) : value;
 
 export { MiElement, convertType, define };
