@@ -112,6 +112,7 @@ export const html = (strings, ...values) =>
  *
  * - `?attr=${boolean}`  -> boolean attribute
  * - `.prop=${objectOrAnyValue}` -> property binding for objects or any value
+ * - `...=${object}` -> spread properties from object
  * - `@event=${(e) => {}}` -> event listener with templated inline function
  * - `@event="handlerName"` -> event listener using handler name from handlers object
  * - `ref="refName"` -> element reference collected and returned
@@ -129,6 +130,7 @@ export function renderAttrs(node, handlers = {}) {
     for (let attr of node.attributes) {
       const startsWith = attr.name[0]
       const name = attr.name.slice(1)
+      let rm = 0
       if (startsWith === '?') {
         // boolean attributes
         if (toJson(attr.value)) {
@@ -136,10 +138,20 @@ export function renderAttrs(node, handlers = {}) {
         } else {
           node.removeAttribute(name)
         }
+        rm = 1
+      } else if (attr.name === '...') {
+        // spread attribute
+        const obj = globalRenderCache.get(attr.value)
+        if (obj && typeof obj === 'object') {
+          for (const [k, v] of Object.entries(obj)) {
+            node[k] = v
+          }
+        }
+        rm = 1
       } else if (startsWith === '.') {
         // property binding
         node[name] = globalRenderCache.get(attr.value) ?? attr.value
-        console.log('property attr', name, attr.value, node[name])
+        rm = 1
       } else if (startsWith === '@') {
         // event listener
         const handlerName = attr.value
@@ -149,19 +161,22 @@ export function renderAttrs(node, handlers = {}) {
         } else if (typeof handlers[handlerName] === 'function') {
           node.addEventListener(name, (e) => handlers[handlerName](e))
         }
+        rm = 1
       } else if (attr.name === 'ref') {
-        // element reference
+        // element reference - remove as well to prevent collection by other processors
         const refName = attr.value
         refs[refName] = node
+        rm = 1
       }
-      if (/[?.@]/.test(startsWith)) {
+      if (rm) {
         requestAnimationFrame(() => {
           node.removeAttribute(attr.name)
         })
       }
     }
   }
-  if (node.children.length === 0) {
+  // early abort if no children or custom element
+  if (node.children.length === 0 || customElements.get(node.localName)) {
     // @ts-expect-error
     return refs
   }

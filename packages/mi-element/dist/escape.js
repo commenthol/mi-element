@@ -43,16 +43,23 @@ function renderAttrs(node, handlers = {}) {
   const refs = {};
   if (node.nodeType === Node.ELEMENT_NODE) for (let attr of node.attributes) {
     const startsWith = attr.name[0], name = attr.name.slice(1);
-    if ('?' === startsWith) toJson(attr.value) ? node.setAttribute(name, '') : node.removeAttribute(name); else if ('.' === startsWith) node[name] = globalRenderCache.get(attr.value) ?? attr.value, 
-    console.log('property attr', name, attr.value, node[name]); else if ('@' === startsWith) {
+    let rm = 0;
+    if ('?' === startsWith) toJson(attr.value) ? node.setAttribute(name, '') : node.removeAttribute(name), 
+    rm = 1; else if ('...' === attr.name) {
+      const obj = globalRenderCache.get(attr.value);
+      if (obj && 'object' == typeof obj) for (const [k, v] of Object.entries(obj)) node[k] = v;
+      rm = 1;
+    } else if ('.' === startsWith) node[name] = globalRenderCache.get(attr.value) ?? attr.value, 
+    rm = 1; else if ('@' === startsWith) {
       const handlerName = attr.value, fn = globalRenderCache.get(handlerName);
-      fn ? node.addEventListener(name, e => fn(e)) : 'function' == typeof handlers[handlerName] && node.addEventListener(name, e => handlers[handlerName](e));
-    } else 'ref' === attr.name && (refs[attr.value] = node);
-    /[?.@]/.test(startsWith) && requestAnimationFrame(() => {
+      fn ? node.addEventListener(name, e => fn(e)) : 'function' == typeof handlers[handlerName] && node.addEventListener(name, e => handlers[handlerName](e)), 
+      rm = 1;
+    } else 'ref' === attr.name && (refs[attr.value] = node, rm = 1);
+    rm && requestAnimationFrame(() => {
       node.removeAttribute(attr.name);
     });
   }
-  if (0 === node.children.length) return refs;
+  if (0 === node.children.length || customElements.get(node.localName)) return refs;
   for (let child of node.children) Object.assign(refs, renderAttrs(child, handlers));
   return refs;
 }

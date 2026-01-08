@@ -3,6 +3,7 @@
  *
  * - `?attr=${boolean}`  -> boolean attribute
  * - `.prop=${objectOrAnyValue}` -> property binding for objects or any value
+ * - `...=${object}` -> spread properties from object
  * - `@event=${(e) => {}}` -> event listener with templated inline function
  * - `@event="handlerName"` -> event listener using handler name from handlers object
  * - `ref="refName"` -> element reference collected and returned

@@ -173,12 +173,48 @@ describe('escape', function () {
     await nap()
     assert.equal(
       el.innerHTML,
-      '<section ref="main">\n      <div ref="content">Hello</div>\n    </section>'
+      '<section>\n      <div>Hello</div>\n    </section>'
     )
     assert.equal(
       refs.main.outerHTML,
-      '<section ref="main">\n      <div ref="content">Hello</div>\n    </section>'
+      '<section>\n      <div>Hello</div>\n    </section>'
     )
-    assert.equal(refs.content.outerHTML, '<div ref="content">Hello</div>')
+    assert.equal(refs.content.outerHTML, '<div>Hello</div>')
+  })
+
+  it('shall spread properties from object', async () => {
+    const obj = { value: 'spread value', disabled: true }
+    const el = document.createElement('div')
+    el.innerHTML = html`<input ...=${obj} />`
+    renderAttrs(el.firstChild)
+    await nap()
+    assert.equal(el.innerHTML, '<input disabled="">')
+    assert.equal(el.firstChild.value, 'spread value')
+    assert.equal(el.firstChild.disabled, true)
+  })
+
+  it('shall not process custom elements', async () => {
+    class MyElement extends HTMLElement {
+      connectedCallback() {
+        this.innerHTML = `<input ref="inside" ?hidden="${false}" value="${this.value}" />`
+      }
+    }
+    customElements.define('my-element', MyElement)
+
+    const el = document.createElement('div')
+    document.body.appendChild(el)
+    el.innerHTML = html`<my-element
+      ?hidden=${true}
+      .value=${'test'}
+      ref="custom"
+    ></my-element>`
+    const refs = renderAttrs(el)
+    await nap()
+    // console.log('%j', el.innerHTML)
+    assert.deepEqual(Object.keys(refs), ['custom'])
+    assert.equal(
+      el.innerHTML,
+      '<my-element hidden=""><input ref="inside" ?hidden="false" value="undefined"></my-element>'
+    )
   })
 })
