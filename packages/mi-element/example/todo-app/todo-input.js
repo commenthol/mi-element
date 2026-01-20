@@ -1,9 +1,9 @@
-import { define, MiElement } from '../../dist/index.js'
+import { define, MiElement, html } from '../../src/index.js'
 
 class TodoInput extends MiElement {
   static shadowRootInit = null
 
-  static template = `
+  static template = html`
   <form id="new-todo-form">
     <input id="new-todo" type="text" placeholder="What needs to be done?">
   </form>
@@ -18,7 +18,7 @@ class TodoInput extends MiElement {
       ev.preventDefault()
       if (!refs.input.value) return
       this.dispatchEvent(
-        new CustomEvent('onSubmit', { detail: refs.input.value })
+        new CustomEvent('todo-submit', { detail: refs.input.value })
       )
       refs.input.value = ''
     })

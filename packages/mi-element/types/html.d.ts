@@ -1,3 +1,4 @@
+export function render(node: any, template: any, handlers?: {}): {};
 /**
  * Post-processing of rendered nodes to handle special attributes:
  *
@@ -11,11 +12,12 @@
  * NOTE: For all attributes and event names always use kebab-case. For properties it will be converted to camelCase.
  * Attributes starting with `?`, `@`, or `.` are removed from DOM after processing
  *
- * @param {Element} node
+ * @param {Element} node to append rendered content
  * @param {Record<string, Function>|HTMLElement} [handlers={}] event handlers or HTMLElement for method lookup
+ * @param {Record<string, Element>} [refs={}] collected references
  * @returns {Record<string, Element>} references collected
  */
-export function renderAttrs(node: Element, handlers?: Record<string, Function> | HTMLElement): Record<string, Element>;
+export function renderAttrs(node: Element, handlers?: Record<string, Function> | HTMLElement, refs?: Record<string, Element>): Record<string, Element>;
 export const globalRenderCache: RenderCache;
 export function unsafeHtml(str: string): string;
 export function escHtml(string: string): string;

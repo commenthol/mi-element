@@ -107,6 +107,19 @@ export const html = (strings, ...values) =>
     )
   )
 
+export function render(node, template, handlers = {}) {
+  const refs = {}
+  const div = document.createElement('div')
+  div.innerHTML = template.toString()
+  // don't understand why `for (let child of div.children)` does not work here
+  for (let child of Array.from(div.children)) {
+    // @ts-expect-error
+    renderAttrs(child, handlers, refs)
+    node.appendChild(child)
+  }
+  return refs
+}
+
 /**
  * Post-processing of rendered nodes to handle special attributes:
  *
@@ -120,12 +133,12 @@ export const html = (strings, ...values) =>
  * NOTE: For all attributes and event names always use kebab-case. For properties it will be converted to camelCase.
  * Attributes starting with `?`, `@`, or `.` are removed from DOM after processing
  *
- * @param {Element} node
+ * @param {Element} node to append rendered content
  * @param {Record<string, Function>|HTMLElement} [handlers={}] event handlers or HTMLElement for method lookup
+ * @param {Record<string, Element>} [refs={}] collected references
  * @returns {Record<string, Element>} references collected
  */
-export function renderAttrs(node, handlers = {}) {
-  const refs = {}
+export function renderAttrs(node, handlers = {}, refs = {}) {
   if (node.nodeType === Node.ELEMENT_NODE) {
     for (let attr of node.attributes) {
       const startsWith = attr.name[0]
@@ -176,13 +189,11 @@ export function renderAttrs(node, handlers = {}) {
     }
   }
   // early abort if no children or custom element
-  if (node.children.length === 0 || customElements.get(node.localName)) {
-    // @ts-expect-error
+  if (!node.children?.length || customElements.get(node.localName)) {
     return refs
   }
-  for (let child of node.children) {
-    Object.assign(refs, renderAttrs(child, handlers))
+  for (let child of Array.from(node.children)) {
+    renderAttrs(child, handlers, refs)
   }
-  // @ts-expect-error
   return refs
 }

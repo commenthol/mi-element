@@ -40,10 +40,10 @@
       "types": "./types/context.d.ts",
       "default": "./dist/context.js"
     },
-    "./escape": {
-      "development": "./src/escape.js",
-      "types": "./types/escape.d.ts",
-      "default": "./dist/escape.js"
+    "./html": {
+      "development": "./src/html.js",
+      "types": "./types/html.d.ts",
+      "default": "./dist/html.js"
     },
     "./refs": {
       "development": "./src/refs.js",

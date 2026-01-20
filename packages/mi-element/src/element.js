@@ -3,7 +3,6 @@ import { kebabToCamelCase, camelToKebabCase } from './case.js'
 import { addGlobalStyles } from './styling.js'
 import { refsBySelector } from './refs.js'
 import { toNumber, toJson } from './utils.js'
-import { renderAttrs } from './escape.js'
 
 /**
  * Mapping of attribute names to property names
@@ -242,15 +241,6 @@ export class MiElement extends HTMLElement {
   }
 
   /**
-   * Post-processing of rendered nodes to handle special attributes:
-   * @param {Record<string, Function>|HTMLElement} [handlers=this] event handlers or HTMLElement for method lookup
-   * @returns {Record<string, Element>} references collected
-   */
-  renderAttrs(handlers = this) {
-    return renderAttrs(this.renderRoot, handlers)
-  }
-
-  /**
    * called every time the components needs a render update
    * @param {Record<string, any>} [_changedProps] previous values of changed
    * properties (attributes)
@@ -387,11 +377,11 @@ export const define = (tagName, elementClass, options) => {
  * @param {typeof MiElement} element
  */
 const renderTemplate = (element) => {
-  if (element.template instanceof HTMLTemplateElement) {
+  if (!element.template || element.template instanceof HTMLTemplateElement) {
     return
   }
   const el = document.createElement('template')
-  el.innerHTML = element.template
+  el.innerHTML = element.template || ''
   element.template = el
 }
 

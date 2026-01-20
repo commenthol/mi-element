@@ -1,4 +1,4 @@
-import { define, MiElement } from '../../dist/index.js'
+import { define, MiElement, html, render } from '../../src/index.js'
 import './todo-input.js'
 import './todo-item.js'
 
@@ -11,15 +11,6 @@ const retrieve = () => {
 
 class TodoApp extends MiElement {
   static shadowRootInit = null
-
-  static template = `
-  <button id="clear">Clear completed</button>
-  <button id="store">Clear storage</button>
-  <section>
-    <todo-input id="input"></todo-input>
-    <ul id="list-container"></ul>
-  </section>
-  `
 
   constructor() {
     super()
@@ -39,36 +30,35 @@ class TodoApp extends MiElement {
   }
 
   render() {
-    this.refs = this.refsBySelector({
-      input: '#input',
-      listContainer: '#list-container',
-      clear: '#clear',
-      store: '#store'
-    })
-    this.refs.input.addEventListener('onSubmit', this.addItem)
-    this.refs.clear.addEventListener('click', () => {
-      this._list = this._list.filter((item) => !item.checked)
-      store(this._list)
-      this.requestUpdate()
-    })
-    this.refs.store.addEventListener('click', () => {
-      localStorage.clear(LIST)
-      location.reload()
-    })
+    this.refs = render(this.renderRoot, html`
+      <button @click=${() => {
+        this._list = this._list.filter((item) => !item.checked)
+        store(this._list)
+        this.requestUpdate()
+      }}>Clear completed</button>
+      <span> </span>
+      <button @click=${() => {
+        localStorage.clear(LIST)
+        location.reload()
+      }}>Clear storage</button>
+      <section>
+        <todo-input @todo-submit=${(ev) => this.addItem(ev)}></todo-input>
+        <ul ref="listContainer"></ul>
+      </section>`
+    )
   }
 
   update() {
-    if (!this.refs.listContainer) return
+    const { listContainer } = this.refs
+    if (!listContainer) return
     // empty the list
-    this.refs.listContainer.innerHTML = ''
+    listContainer.innerHTML = ''
     this._list.forEach((item, index) => {
-      let $item = document.createElement('todo-item')
-      $item.setAttribute('text', item.text)
-      $item.checked = item.checked
-      $item.index = index
-      $item.addEventListener('onRemove', this.removeItem)
-      $item.addEventListener('onToggle', this.toggleItem)
-      this.refs.listContainer.appendChild($item)
+      render(listContainer, html`<todo-item
+        .text=${item.text} ?checked=${item.checked} .index=${index}
+        @on-remove=${this.removeItem}
+        @on-toggle=${this.toggleItem}>
+        </todo-item>`)
     })
   }
 

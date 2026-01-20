@@ -5,7 +5,7 @@ import {
   escHtml,
   globalRenderCache,
   renderAttrs
-} from '../src/escape.js'
+} from '../src/html.js'
 
 const nap = (ms = 50) => new Promise((resolve) => setTimeout(resolve, ms))
 

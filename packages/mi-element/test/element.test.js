@@ -20,10 +20,7 @@ describe('MiElement', () => {
       const el = document.createElement(tag)
       document.body.appendChild(el)
       // mutates the template to HTMLTemplateElement
-      assert.strictEqual(
-        toString.call(MiTest.template),
-        '[object HTMLTemplateElement]'
-      )
+      assert.strictEqual(toString.call(MiTest.template), '[object Undefined]')
     })
 
     it('shall transform template from string', () => {

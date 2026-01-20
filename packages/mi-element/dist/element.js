@@ -8,8 +8,6 @@ import { refsBySelector } from './refs.js';
 
 import { toNumber, toJson } from './utils.js';
 
-import { renderAttrs } from './escape.js';
-
 const nameMap = {
   class: 'className',
   for: 'htmlFor'
@@ -88,9 +86,6 @@ class MiElement extends HTMLElement {
     }
   }
   render() {}
-  renderAttrs(handlers = this) {
-    return renderAttrs(this.renderRoot, handlers);
-  }
   update(_changedProps) {}
   on(eventName, listener, node = this) {
     node.addEventListener(eventName, listener), this.#disposers.add(() => node.removeEventListener(eventName, listener));
@@ -136,9 +131,9 @@ const define = (tagName, elementClass, options) => {
   elementClass.styles && (elementClass.styles = styles || (usedCssPrefix === cssPrefix ? elementClass.styles : elementClass.styles.replaceAll(`--${usedCssPrefix}-`, cssPrefix))), 
   renderTemplate(elementClass), window.customElements.define(tagName, elementClass);
 }, renderTemplate = element => {
-  if (element.template instanceof HTMLTemplateElement) return;
+  if (!element.template || element.template instanceof HTMLTemplateElement) return;
   const el = document.createElement('template');
-  el.innerHTML = element.template, element.template = el;
+  el.innerHTML = element.template || '', element.template = el;
 }, convertType = (value, type) => type === Boolean ? null !== value : type === Number ? toNumber(value) : type === Array ? toJson(value) ?? value.split(',').map(v => v.trim()) : type === Object ? toJson(value) : value;
 
 export { MiElement, convertType, define };

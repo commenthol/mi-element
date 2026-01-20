@@ -39,8 +39,15 @@ const unsafeHtml = str => new UnsafeHtml(str), escMap = {
   raw: strings
 }, ...values.map(val => Array.isArray(val) ? val.map(escValue).join('') : escValue(val))));
 
-function renderAttrs(node, handlers = {}) {
-  const refs = {};
+function render(node, template, handlers = {}) {
+  const refs = {}, div = document.createElement('div');
+  div.innerHTML = template.toString();
+  for (let child of Array.from(div.children)) renderAttrs(child, handlers, refs), 
+  node.appendChild(child);
+  return refs;
+}
+
+function renderAttrs(node, handlers = {}, refs = {}) {
   if (node.nodeType === Node.ELEMENT_NODE) for (let attr of node.attributes) {
     const startsWith = attr.name[0], name = attr.name.slice(1);
     let rm = 0;
@@ -59,9 +66,9 @@ function renderAttrs(node, handlers = {}) {
       node.removeAttribute(attr.name);
     });
   }
-  if (0 === node.children.length || customElements.get(node.localName)) return refs;
-  for (let child of node.children) Object.assign(refs, renderAttrs(child, handlers));
+  if (!node.children?.length || customElements.get(node.localName)) return refs;
+  for (let child of Array.from(node.children)) renderAttrs(child, handlers, refs);
   return refs;
 }
 
-export { escHtml, globalRenderCache, html, renderAttrs, unsafeHtml };
+export { escHtml, globalRenderCache, html, render, renderAttrs, unsafeHtml };
