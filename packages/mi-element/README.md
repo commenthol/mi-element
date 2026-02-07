@@ -94,6 +94,7 @@ In `./example` you'll find a working sample of a Todo App. Check it out with
 # Documentation
 
 - [element][docs-element] mi-element's lifecycle
+- [render][docs-render] mi-elements html template literal and render function
 - [controller][docs-controller] adding controllers to mi-element to hook into the lifecycle
 - [signal][docs-signal] Signals and effect for reactive behavior
 - [store][docs-store] Manage shared state in an application
@@ -106,6 +107,7 @@ In `./example` you'll find a working sample of a Todo App. Check it out with
 MIT licensed
 
 [docs-element]: https://github.com/commenthol/mi-element/tree/main/packages/mi-element/docs/element.md
+[docs-render]: https://github.com/commenthol/mi-element/tree/main/packages/mi-element/docs/render.md
 [docs-controller]: https://github.com/commenthol/mi-element/tree/main/packages/mi-element/docs/controller.md
 [docs-context]: https://github.com/commenthol/mi-element/tree/main/packages/mi-element/docs/context.md
 [docs-signal]: https://github.com/commenthol/mi-element/tree/main/packages/mi-element/docs/signal.md

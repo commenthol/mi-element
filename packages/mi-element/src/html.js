@@ -107,6 +107,14 @@ export const html = (strings, ...values) =>
     )
   )
 
+/**
+ * render HTML template into given node with support for special attributes
+ *
+ * @param {Element} node to append rendered content
+ * @param {string|UnsafeHtml} template HTML template string
+ * @param {Record<string, Function>|HTMLElement} [handlers={}] event handlers or HTMLElement for method lookup
+ * @returns {Record<string, Element>} references collected
+ */
 export function render(node, template, handlers = {}) {
   const refs = {}
   const div = document.createElement('div')
@@ -117,6 +125,7 @@ export function render(node, template, handlers = {}) {
     renderAttrs(child, handlers, refs)
     node.appendChild(child)
   }
+  // @ts-expect-error
   return refs
 }
 

@@ -1,4 +1,12 @@
-export function render(node: any, template: any, handlers?: {}): {};
+/**
+ * render HTML template into given node with support for special attributes
+ *
+ * @param {Element} node to append rendered content
+ * @param {string|UnsafeHtml} template HTML template string
+ * @param {Record<string, Function>|HTMLElement} [handlers={}] event handlers or HTMLElement for method lookup
+ * @returns {Record<string, Element>} references collected
+ */
+export function render(node: Element, template: string | UnsafeHtml, handlers?: Record<string, Function> | HTMLElement): Record<string, Element>;
 /**
  * Post-processing of rendered nodes to handle special attributes:
  *
@@ -22,6 +30,11 @@ export const globalRenderCache: RenderCache;
 export function unsafeHtml(str: string): string;
 export function escHtml(string: string): string;
 export function html(strings: TemplateStringsArray, ...values: any[]): string;
+/**
+ * A helper class to avoid double escaping of HTML strings
+ */
+declare class UnsafeHtml extends String {
+}
 /**
  * A cache for rendering values to avoid keeping them in memory too long
  */
