@@ -187,6 +187,6 @@ export class ContextConsumer {
     }
     this.#value = value
     // @ts-expect-error
-    this.host.requestUpdate()
+    this.host.requestUpdate(value)
   }
 }

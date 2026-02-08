@@ -67,7 +67,7 @@ class ContextConsumer {
   _callback(value, unsubscribe) {
     unsubscribe && (this.subscribe ? this.unsubscribe && (this.unsubscribe !== unsubscribe && this.unsubscribe(), 
     this.unsubscribe = unsubscribe) : unsubscribe()), this.validate(value) && (this.#value = value, 
-    this.host.requestUpdate());
+    this.host.requestUpdate(value));
   }
 }
 
