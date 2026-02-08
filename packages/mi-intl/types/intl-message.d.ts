@@ -5,20 +5,27 @@
  * import { define } from 'mi-element'
  * import { MiIntlMessage } from 'mi-intl'
  *
- * define('mi-message',
- *   class extends MiIntlMessage {
- *     static get properties() {
- *       return { label: {}, value: {} }
- *     }
- *     update() {
- *       this.renderRoot.textContent = this.t(this.label, this.value)
- *     }
- *   }
- * )
+ * define('mi-message', MiIntlMessage)
+ * // then use <mi-message label="my.label" value='{ "count": 5 }'></mi-message> in your template
  * ```
  */
 export class MiIntlMessage extends MiElement {
-    t(label: any, value: any): any;
+    static get properties(): {
+        label: {};
+        value: {};
+        unsafeHtml: {
+            type: BooleanConstructor;
+            initial: boolean;
+        };
+    };
+    /**
+     * @param {string} label
+     * @param {object} [value]
+     * @returns
+     */
+    t(label: string, value?: object): any;
+    update(): void;
+    value: any;
     #private;
 }
 import { MiElement } from 'mi-element';

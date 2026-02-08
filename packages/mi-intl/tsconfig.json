@@ -14,6 +14,6 @@
     "strict": true,
     "target": "esnext"
   },
-  "include": ["src"],
+  "include": ["src", "test/intl-message.test.js"],
   "exclude": ["node_modules", "test"]
 }

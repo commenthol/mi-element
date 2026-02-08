@@ -1,13 +1,15 @@
 function cookieParse(cookieStr = "") {
-  const parts = cookieStr.split(/\s*;\s*/), cookies = {};
+  const parts = cookieStr.split(/\s*;\s*/), cookies = Object.create(null);
   for (const part of parts) {
     const [key, val] = part.split('=');
-    if (key) {
+    if (key && !Object.prototype.hasOwnProperty.call(Object.prototype, key)) {
       const value = decodeURIComponent(val);
       cookies[key] = value;
     }
   }
-  return cookies;
+  return {
+    ...cookies
+  };
 }
 
 const fieldContentRegExp = /^[\u0009\u0020-\u007e\u0080-\u00ff]+$/;

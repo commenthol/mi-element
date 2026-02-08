@@ -18,6 +18,14 @@ describe.only('cookie', function () {
         }
       )
     })
+    it('shall not pollute prototype', function () {
+      const cookies = cookieParse(
+        'foo=bar; __proto__=polluted; constructor=foobar'
+      )
+      assert.strictEqual(cookies.foo, 'bar')
+      assert.deepStrictEqual(cookies.__proto__, {})
+      assert.strictEqual({}.polluted, undefined)
+    })
   })
 
   describe('cookieSerialize', function () {

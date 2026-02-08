@@ -1,4 +1,4 @@
-import { define, MiElement, html, unsafeHtml } from 'mi-element'
+import { define, MiElement, html } from 'mi-element'
 import { IntlConsumer } from '../src/index.js'
 
 function flagEmoji(countryCode) {
@@ -19,15 +19,12 @@ define(
       this.#context = new IntlConsumer(this)
       this.renderRoot.innerHTML = html`
         <select>
-          ${unsafeHtml(
-            this.#context.value
-              .getLanguages()
-              .map(
-                (lc) =>
-                  html`<option value="${lc}">${flagEmoji(lc)} ${lc}</option>`
-              )
-              .join('')
-          )}
+          ${this.#context.value
+            .getLanguages()
+            .map(
+              (lc) =>
+                html`<option value="${lc}">${flagEmoji(lc)} ${lc}</option>`
+            )}
         </select>
       `
       this.ref = this.renderRoot.querySelector('select')

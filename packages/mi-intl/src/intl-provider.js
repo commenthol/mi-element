@@ -48,8 +48,10 @@ export class MiIntlProvider extends MiElement {
    * @returns {IntlContext}
    */
   _contextValue() {
-    const { t, lng, getLanguages } = this.i18n ?? {
-      t: () => '',
+    const t = (label, values) => this.i18n?.t(label, values) ?? ''
+
+    const { lng, getLanguages } = this.i18n ?? {
+      t,
       lng: '',
       getLanguages: () => []
     }
@@ -71,9 +73,17 @@ export class MiIntlProvider extends MiElement {
     await this.i18n?.changeLanguage(lng).finally(() => {
       this.requestUpdate()
     })
-    // need to wait two animations frames until all updates have been propagated
-    await requestAnimationFrameP()
-    await requestAnimationFrameP()
+    // need to wait two animation frames until all updates have been propagated
+    for (let i = 0; i < 2; i++) {
+      await requestAnimationFrameP()
+    }
+    this.dispatchEvent(
+      new CustomEvent('language-changed', {
+        detail: { lng },
+        bubbles: true,
+        composed: true
+      })
+    )
     this.loading = false
   }
 

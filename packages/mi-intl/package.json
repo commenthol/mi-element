@@ -49,8 +49,9 @@
     "types": "rimraf types; tsc"
   },
   "dependencies": {
-    "intl-messageformat-tiny": "^1.1.0",
-    "mi-element": "workspace:*"
+    "intl-messageformat-tiny": "^1.2.0",
+    "mi-element": "workspace:*",
+    "mi-signal": "workspace:^"
   },
   "devDependencies": {
     "@eslint/js": "catalog:",

@@ -29,25 +29,7 @@ import { MiIntlProvider, MiIntlMessage, IntlConsumer } from 'mi-intl'
 
 // define tag for intl-provider
 define('mi-intl-provider', MiIntlProvider)
-
-// connects to MiIntlProvider using IntlConsumer
-define(
-  'mi-message',
-  class extends MiIntlMessage {
-    static get properties () {
-      return { label: {}, value: {} }
-    }
-
-    render() {
-      this.update()
-    }
-
-    update() {
-      // this.t() is provided by MiIntlMessage
-      this.renderRoot.textContent = this.t(this.label, { value: this.value })
-    }
-  }
-)
+define('mi-message', MiIntlMessage)
 
 // define lang selector
 define(

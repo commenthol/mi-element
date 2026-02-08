@@ -8,15 +8,15 @@
  */
 export function cookieParse(cookieStr = '') {
   const parts = cookieStr.split(/\s*;\s*/)
-  const cookies = {}
+  const cookies = Object.create(null)
   for (const part of parts) {
     const [key, val] = part.split('=')
-    if (key) {
+    if (key && !Object.prototype.hasOwnProperty.call(Object.prototype, key)) {
       const value = decodeURIComponent(val)
       cookies[key] = value
     }
   }
-  return cookies
+  return { ...cookies }
 }
 
 /**
