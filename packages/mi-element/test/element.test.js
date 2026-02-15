@@ -484,4 +484,92 @@ describe('MiElement', () => {
       assert.strictEqual(el.refs.count.textContent, '3')
     })
   })
+
+  describe('form-associated', () => {
+    class MiTestFormInput extends MiElement {
+      static formAssociated = true
+
+      static get properties() {
+        return {
+          name: { type: String },
+          value: { type: String, initial: '' }
+        }
+      }
+
+      static template = html`<input type="text" />`
+
+      static shadowRootInit = null
+
+      render() {
+        this.refs = this.refsBySelector({ input: 'input' })
+        this.refs.input.addEventListener('input', (ev) => {
+          this.value = ev.target.value
+        })
+      }
+
+      handleFormdata(ev) {
+        if (this.name) {
+          ev.formData.append(this.name, this.value)
+        }
+      }
+    }
+
+    const tag = 'mi-test-form-input'
+    define(tag, MiTestFormInput)
+
+    beforeEach(() => {
+      document.body.innerHTML = null
+    })
+
+    it('shall submit form data with form-associated element', async () => {
+      const html = `
+        <form id="test-form">
+          <mi-test-form-input name="username" value="john"></mi-test-form-input>
+          <mi-test-form-input name="email" value="john@example.com"></mi-test-form-input>
+          <button type="submit">Submit</button>
+        </form>
+      `
+      document.body.innerHTML = html
+      const form = document.getElementById('test-form')
+      const input1 = form.querySelector('mi-test-form-input:nth-of-type(1)')
+      const input2 = form.querySelector('mi-test-form-input:nth-of-type(2)')
+
+      await nap()
+
+      assert.strictEqual(input1.value, 'john')
+      assert.strictEqual(input2.value, 'john@example.com')
+
+      const formData = new FormData(form)
+      assert.strictEqual(formData.get('username'), 'john')
+      assert.strictEqual(formData.get('email'), 'john@example.com')
+    })
+
+    it('shall update form data on value change', async () => {
+      const html = `
+        <form id="test-form">
+          <mi-test-form-input name="username" value="jane"></mi-test-form-input>
+          <button type="submit">Submit</button>
+        </form>
+      `
+      document.body.innerHTML = html
+      const form = document.getElementById('test-form')
+      const input = form.querySelector('mi-test-form-input')
+
+      await nap()
+
+      assert.strictEqual(input.value, 'jane')
+      let formData = new FormData(form)
+      assert.strictEqual(formData.get('username'), 'jane')
+
+      // simulate user input
+      input.refs.input.value = 'updated'
+      input.refs.input.dispatchEvent(new Event('input'))
+
+      await nap()
+
+      assert.strictEqual(input.value, 'updated')
+      formData = new FormData(form)
+      assert.strictEqual(formData.get('username'), 'updated')
+    })
+  })
 })

@@ -7,6 +7,7 @@
 * [disconnectedCallback()](#disconnectedcallback)
 * [attributeChangedCallback(name, oldValue, newValue)](#attributechangedcallbackname-oldvalue-newvalue)
 * [Update Cycle](#update-cycle)
+* [Form-Associated Elements](#form-associated-elements)
 * [render()](#render)
 * [update(changedAttributes)](#updatechangedattributes)
 * [shouldUpdate(changedAttributes)](#shouldupdatechangedattributes)
@@ -206,6 +207,85 @@ class Counter extends MiElement {
 }
 ```
 
+## Form-Associated Elements
+
+MiElement supports [form-associated custom elements][form-associated], allowing
+your components to participate in HTML forms just like native form controls.
+
+[form-associated]: https://web.dev/articles/form-associated-custom-elements
+
+### Declaring a Form-Associated Element
+
+Set `static formAssociated = true` on your component to enable form association:
+
+```js
+import { define, MiElement, html } from 'mi-element'
+
+class CustomInput extends MiElement {
+  static formAssociated = true
+
+  static get properties() {
+    return {
+      name: { type: String },
+      value: { type: String, initial: '' }
+    }
+  }
+
+  static template = html`<input type="text" />`
+  
+  render() {
+    this.refs = this.refsBySelector({ input: 'input' })
+    this.refs.input.addEventListener('input', (ev) => {
+      this.value = ev.target.value
+    })
+  }
+}
+
+define('custom-input', CustomInput)
+```
+
+### Handling Form Data
+
+Implement the `handleFormdata(ev)` method to submit your component's data with
+the form:
+
+```js
+class CustomInput extends MiElement {
+  static formAssociated = true
+
+  // ...other code...
+
+  handleFormdata(ev) {
+    // Only include data if the component has a name attribute
+    if (this.name) {
+      ev.formData.append(this.name, this.refs.input.value)
+    }
+  }
+}
+```
+
+The `handleFormdata` method is automatically called when the form is submitted or
+when `FormData` is created from the form.
+
+### Usage Example
+
+```html
+<form id="my-form">
+  <custom-input name="username" value="john"></custom-input>
+  <custom-input name="email" value="john@example.com"></custom-input>
+  <button type="submit">Submit</button>
+</form>
+
+<script>
+  const form = document.getElementById('my-form')
+  const formData = new FormData(form)
+  
+  console.log(formData.get('username')) // 'john'
+  console.log(formData.get('email'))    // 'john@example.com'
+</script>
+```
+
+
 ## render()
 
 Initial rendering of the component. Try to render the component only once!
@@ -275,7 +355,7 @@ class Counter extends MiElement {
   static template = `
   <button id>Count</button>
   <p>Counter value: <span>0</span></p>
-  `
+  ``
 
   render() {
     // template is already rendered on `this.renderRoot`

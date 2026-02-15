@@ -52,10 +52,13 @@ class MiElement extends HTMLElement {
     }
   }
   connectedCallback() {
-    this.#controllers.forEach(controller => controller.hostConnected?.());
-    const {shadowRootInit: shadowRootInit, useGlobalStyles: useGlobalStyles, template: template} = this.constructor;
-    this.renderRoot = shadowRootInit ? this.shadowRoot ?? this.attachShadow(shadowRootInit) : this, 
+    const {shadowRootInit: shadowRootInit, useGlobalStyles: useGlobalStyles, template: template, formAssociated: formAssociated} = this.constructor;
+    if (this.#controllers.forEach(controller => controller.hostConnected?.()), this.renderRoot = shadowRootInit ? this.shadowRoot ?? this.attachShadow(shadowRootInit) : this, 
     this.addTemplate(template), useGlobalStyles && addGlobalStyles(this.renderRoot), 
+    formAssociated && this.handleFormdata) {
+      const internals = this.attachInternals();
+      internals.form && this.on('formdata', ev => this.handleFormdata(ev), internals.form);
+    }
     this.render(), this.requestUpdate();
   }
   disconnectedCallback() {
