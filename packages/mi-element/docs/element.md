@@ -2,17 +2,17 @@
 
 <!-- !toc (minlevel=2) -->
 
-* [constructor()](#constructor)
-* [connectedCallback()](#connectedcallback)
-* [disconnectedCallback()](#disconnectedcallback)
-* [attributeChangedCallback(name, oldValue, newValue)](#attributechangedcallbackname-oldvalue-newvalue)
-* [Update Cycle](#update-cycle)
-* [Form-Associated Elements](#form-associated-elements)
-* [render()](#render)
-* [update(changedAttributes)](#updatechangedattributes)
-* [shouldUpdate(changedAttributes)](#shouldupdatechangedattributes)
-* [on(eventName, listener, \[node\])](#oneventname-listener-node)
-* [once(eventName, listener, \[node\])](#onceeventname-listener-node)
+- [constructor()](#constructor)
+- [connectedCallback()](#connectedcallback)
+- [disconnectedCallback()](#disconnectedcallback)
+- [attributeChangedCallback(name, oldValue, newValue)](#attributechangedcallbackname-oldvalue-newvalue)
+- [Update Cycle](#update-cycle)
+- [Form-Associated Elements](#form-associated-elements)
+- [render()](#render)
+- [update(changedAttributes)](#updatechangedattributes)
+- [shouldUpdate(changedAttributes)](#shouldupdatechangedattributes)
+- [on(eventName, listener, \[node\])](#oneventname-listener-node)
+- [once(eventName, listener, \[node\])](#onceeventname-listener-node)
 
 <!-- toc! -->
 
@@ -29,16 +29,15 @@ from the `static attributes` object. From there setters and getters for property
 changes using `.[name] = newValue` instead of `setAttribute(name, newValue)` are
 applied.
 
-
 ```js
 class extends MiElement {
   /**
-   * Declare observable attributes with this getter. 
+   * Declare observable attributes with this getter.
    * Use `true` to define boolean attributes!
-   * Do not use `static attribute = { text: false }` as components attributes 
-   * will use a shallow copy only. With the getter we always get a real "deep" 
+   * Do not use `static attribute = { text: false }` as components attributes
+   * will use a shallow copy only. With the getter we always get a real "deep"
    * copy.
-   * 
+   *
    * Avoid using attributes which are HTMLElement properties e.g. `className`.
    * camelCased attributes will be made observable using its kebab-cased name.
    */
@@ -77,7 +76,7 @@ Then the first `render()` is issued with a `requestUpdate()`
 
 ```js
 class extends MiElement {
-  // { mode: 'open' } is the default shadow root option 
+  // { mode: 'open' } is the default shadow root option
   // use `null` for no shadow root or { mode: 'closed' } for closed mode
   static shadowRootInit = { mode: 'open' }
 
@@ -127,11 +126,11 @@ prevent memory leaks.
 
 See previous example.
 
-!!! INFO No need to remove internal event listeners
-
-    You don't need to remove event listeners added on the component's own
-    DOM. This includes those added in your template. Unlike external
-    event listeners, these will be garbage collected with the component.
+> ℹ️ **No need to remove internal event listeners**
+>
+> You don't need to remove event listeners added on the component's own
+> DOM. This includes those added in your template. Unlike external
+> event listeners, these will be garbage collected with the component.
 
 ## attributeChangedCallback(name, oldValue, newValue)
 
@@ -212,16 +211,18 @@ class Counter extends MiElement {
 MiElement supports [form-associated custom elements][form-associated], allowing
 your components to participate in HTML forms just like native form controls.
 
-[form-associated]: https://web.dev/articles/form-associated-custom-elements
+[form-associated]: https://web.dev/articles/more-capable-form-controls
 
 ### Declaring a Form-Associated Element
 
 Set `static formAssociated = true` on your component to enable form association:
 
 ```js
-import { define, MiElement, html } from 'mi-element'
+import { define, MiElement } from 'mi-element'
 
 class CustomInput extends MiElement {
+  #internals
+
   static formAssociated = true
 
   static get properties() {
@@ -231,41 +232,48 @@ class CustomInput extends MiElement {
     }
   }
 
-  static template = html`<input type="text" />`
-  
+  static template = `<input type="text" />`
+
   render() {
+    this.#internals = this.attachInternals()
+    // define the aria role
+    this.#internals.ariaRole = 'textbox'
+    // set the initial form value
+    this.#internals.setFormValue(this.value)
+
     this.refs = this.refsBySelector({ input: 'input' })
     this.refs.input.addEventListener('input', (ev) => {
       this.value = ev.target.value
+      // !needs a `name` attribute on the custom element
+      this.#internals.setFormValue(this.value)
+      this.checkValidity(this.value)
     })
+  }
+
+  checkValidity(newValue) {
+    if (newValue >= 2) {
+      this.#internals.setValidity({})
+      return
+    }
+    this.#internals.setValidity(
+      { tooSort: true },
+      'value too short',
+      this.refs.input
+    )
+    this.#internals.reportValidity()
+  }
+
+  formResetCallback() {
+    this.value = this.refs.input.value = ''
+  }
+
+  formStateRestoreCallback(state, reason) {
+    this.value = this.refs.input.value = state
   }
 }
 
 define('custom-input', CustomInput)
 ```
-
-### Handling Form Data
-
-Implement the `handleFormdata(ev)` method to submit your component's data with
-the form:
-
-```js
-class CustomInput extends MiElement {
-  static formAssociated = true
-
-  // ...other code...
-
-  handleFormdata(ev) {
-    // Only include data if the component has a name attribute
-    if (this.name) {
-      ev.formData.append(this.name, this.refs.input.value)
-    }
-  }
-}
-```
-
-The `handleFormdata` method is automatically called when the form is submitted or
-when `FormData` is created from the form.
 
 ### Usage Example
 
@@ -279,12 +287,11 @@ when `FormData` is created from the form.
 <script>
   const form = document.getElementById('my-form')
   const formData = new FormData(form)
-  
+
   console.log(formData.get('username')) // 'john'
-  console.log(formData.get('email'))    // 'john@example.com'
+  console.log(formData.get('email')) // 'john@example.com'
 </script>
 ```
-
 
 ## render()
 
@@ -296,10 +303,10 @@ Within the `render()` method, bear in mind to:
 - Avoid producing any side effects.
 - Use only the component's properties as input.
 
-!!! WARNING XSS - Cross-Site Scripting
-    
-    Using [`innerHTML`][innerHTML] to create the components DOM is susceptible to
-    [XSS][XSS] attacks in case that user-supplied data contains valid HTML markup.
+> ⚠️ **XSS - Cross-Site Scripting**
+>
+> Using [`innerHTML`][innerHTML] to create the components DOM is susceptible to
+> [XSS][XSS] attacks in case that user-supplied data contains valid HTML markup.
 
 In all other cases you may consider the <code>html``</code> template literal or
 `escHtml()` from the "mi-element" import, which escapes user-supplied data.
@@ -403,9 +410,9 @@ import { MiElement, Signal } from 'mi-element'
 
 class Counter extends MiElement {
   static get properties() {
-    return { 
-      value: { type: Number } 
-     }
+    return {
+      value: { type: Number }
+    }
   }
 
   static template = `
@@ -419,7 +426,6 @@ class Counter extends MiElement {
     this.value = 0
   }
 
-
   render() {
     const refs = this.refsBySelector({
       button: 'button',
@@ -431,7 +437,7 @@ class Counter extends MiElement {
     })
 
     Signal.effect(() => {
-      // an update only happens if `this.value` changes; 
+      // an update only happens if `this.value` changes;
       // other attribute changes are ignored.
       refs.count.textContent = this.value
     })
@@ -447,7 +453,7 @@ disconnects.
 ```js
 class Router extends MiElement {
   render() {
-    // add event listener 'hashchange' to `window` which is disposed as soon as 
+    // add event listener 'hashchange' to `window` which is disposed as soon as
     // the component unmounts
     this.on('hashchange', this.update, window)
   }

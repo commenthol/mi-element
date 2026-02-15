@@ -160,8 +160,7 @@ export class MiElement extends HTMLElement {
    */
   connectedCallback() {
     // @ts-expect-error
-    const { shadowRootInit, useGlobalStyles, template, formAssociated } =
-      this.constructor
+    const { shadowRootInit, useGlobalStyles, template } = this.constructor
     // connect all controllers
     this.#controllers.forEach((controller) => controller.hostConnected?.())
     this.renderRoot = shadowRootInit
@@ -170,31 +169,6 @@ export class MiElement extends HTMLElement {
     this.addTemplate(template)
     if (useGlobalStyles) {
       addGlobalStyles(this.renderRoot)
-    }
-    /**
-     * handle formdata event if `handleFormdata` method is defined on the component.
-     * @see https://developer.mozilla.org/en-US/docs/Web/API/HTMLFormElement/formdata_event
-     * ```js
-     * class MyElement extends MiElement {
-     *   static formAssociated = true // required to receive formdata event
-     *   handleFormdata(ev) {
-     *     const { name, value } = this.refs.input
-     *     ev.formData.append(name, value)
-     *   }
-     *   render() {
-     *     this.renderRoot.innerHTML = html`<input name="${this.name}" value="${this.value}">`
-     *     this.refs = { input: this.renderRoot.querySelector('input') }
-     *   }
-     * }
-     * ```
-     */
-    // @ts-expect-error
-    if (formAssociated && this.handleFormdata) {
-      const internals = this.attachInternals()
-      if (internals.form) {
-        // @ts-expect-error
-        this.on('formdata', (ev) => this.handleFormdata(ev), internals.form)
-      }
     }
     this.render() // initial render
     this.requestUpdate() // request initial update

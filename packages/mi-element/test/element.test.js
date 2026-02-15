@@ -487,6 +487,8 @@ describe('MiElement', () => {
 
   describe('form-associated', () => {
     class MiTestFormInput extends MiElement {
+      #internals
+
       static formAssociated = true
 
       static get properties() {
@@ -496,21 +498,37 @@ describe('MiElement', () => {
         }
       }
 
-      static template = html`<input type="text" />`
+      static template = `<input type="text" />`
 
       static shadowRootInit = null
 
       render() {
+        this.#internals = this.attachInternals()
+        this.#internals.ariaRole = 'textbox'
+        this.#internals.setFormValue(this.value)
         this.refs = this.refsBySelector({ input: 'input' })
         this.refs.input.addEventListener('input', (ev) => {
           this.value = ev.target.value
+          this.#internals.setFormValue(this.value)
+          this.checkValidity(this.value)
         })
       }
 
-      handleFormdata(ev) {
-        if (this.name) {
-          ev.formData.append(this.name, this.value)
+      checkValidity(newValue) {
+        if (newValue >= 2) {
+          this.#internals.setValidity({})
+          return
         }
+        this.#internals.setValidity(
+          { tooSort: true },
+          'value too short',
+          this.refs.input
+        )
+        this.#internals.reportValidity()
+      }
+
+      formResetCallback() {
+        this.value = this.refs.input.value = ''
       }
     }
 
