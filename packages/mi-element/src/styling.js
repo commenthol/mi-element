@@ -11,8 +11,6 @@ export const classNames = (...args) => {
     if (!arg) return
     if (typeof arg === 'string') {
       classList.push(arg)
-    } else if (Array.isArray(arg)) {
-      classList.push(classNames(...arg))
     } else if (typeof arg === 'object') {
       Object.entries(arg).forEach(([key, value]) => {
         if (value) {
@@ -78,8 +76,40 @@ export function addGlobalStyles(renderRoot) {
 }
 
 /**
+ * A helper class to avoid double escaping of HTML strings
+ */
+class UnsafeCss extends String {}
+
+/**
+ * tag a string as css for not to be escaped
+ * @param {string} str
+ * @returns {string}
+ */
+// @ts-expect-error
+export const unsafeCss = (str) => new UnsafeCss(str)
+
+const escMap = {
+  '&': '\\26 ',
+  '<': '\\3c ',
+  '>': '\\3e '
+}
+
+const esc = (string) => string.replace(/[&<>]/g, (tag) => escMap[tag])
+
+/**
+ * @see https://mathiasbynens.be/notes/css-escapes
+ * Escape a value interpolated into a css tagged template literal.
+ * Prevents injection of closing style tags or unexpected CSS constructs.
+ * @param {*} string
+ * @returns {string}
+ */
+export const escCss = (string) =>
+  // @ts-expect-error
+  string instanceof UnsafeCss ? string : unsafeCss(esc('' + string))
+
+/**
  * Helper literal to show css styles in JS e.g. with
  * https://marketplace.visualstudio.com/items?itemName=Tobermory.es6-string-html
  */
 export const css = (strings, ...values) =>
-  String.raw({ raw: strings }, ...values)
+  String.raw({ raw: strings }, ...values.map(escCss))

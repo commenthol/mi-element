@@ -40,8 +40,9 @@ declare class UnsafeHtml extends String {
  */
 declare class RenderCache {
     cnt: number;
-    map: Map<any, any>;
-    cache: WeakMap<WeakKey, any>;
+    cache: Map<any, any>;
+    last: number;
+    get size(): number;
     _inc(): number;
     clear(): void;
     set(value: any): string;

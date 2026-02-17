@@ -3,7 +3,7 @@ import { camelToKebabCase } from './case.js';
 const classNames = (...args) => {
   const classList = [];
   return args.forEach(arg => {
-    arg && ('string' == typeof arg ? classList.push(arg) : Array.isArray(arg) ? classList.push(classNames(...arg)) : 'object' == typeof arg && Object.entries(arg).forEach(([key, value]) => {
+    arg && ('string' == typeof arg ? classList.push(arg) : 'object' == typeof arg && Object.entries(arg).forEach(([key, value]) => {
       value && classList.push(key);
     }));
   }), classList.join(' ');
@@ -26,8 +26,14 @@ function addGlobalStyles(renderRoot) {
   })), globalSheets));
 }
 
-const css = (strings, ...values) => String.raw({
-  raw: strings
-}, ...values);
+class UnsafeCss extends String {}
 
-export { addGlobalStyles, classNames, css, styleMap };
+const unsafeCss = str => new UnsafeCss(str), escMap = {
+  '&': '\\26 ',
+  '<': '\\3c ',
+  '>': '\\3e '
+}, escCss = string => string instanceof UnsafeCss ? string : unsafeCss((string => string.replace(/[&<>]/g, tag => escMap[tag]))('' + string)), css = (strings, ...values) => String.raw({
+  raw: strings
+}, ...values.map(escCss));
+
+export { addGlobalStyles, classNames, css, escCss, styleMap, unsafeCss };

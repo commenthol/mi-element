@@ -15,4 +15,6 @@ export function styleMap(map: {
 }, options?: {
     unit?: string | undefined;
 }): string;
+export function unsafeCss(str: string): string;
+export function escCss(string: any): string;
 export function css(strings: any, ...values: any[]): string;

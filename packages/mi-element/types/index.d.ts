@@ -6,5 +6,5 @@ export type HostController = import("./element.js").HostController;
 export type Action = import("./store.js").Action;
 export { ContextConsumer, ContextProvider, ContextRequestEvent } from "./context.js";
 export { MiElement, convertType, define } from "./element.js";
-export { unsafeHtml, html, escHtml, render, renderAttrs } from "./html.js";
-export { classNames, styleMap, addGlobalStyles, css } from "./styling.js";
+export { html, unsafeHtml, escHtml, render, renderAttrs } from "./html.js";
+export { classNames, styleMap, addGlobalStyles, css, unsafeCss, escCss } from "./styling.js";

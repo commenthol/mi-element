@@ -5,8 +5,12 @@ import { toJson } from './utils.js'
  */
 class RenderCache {
   cnt = 0
-  map = new Map()
-  cache = new WeakMap()
+  cache = new Map()
+  last = 0
+
+  get size() {
+    return this.cache.size
+  }
 
   _inc() {
     this.cnt = ++this.cnt & 0xfffffff
@@ -15,21 +19,24 @@ class RenderCache {
 
   clear() {
     this.cnt = 0
-    this.map.clear()
+    this.cache.clear()
   }
 
   set(value) {
+    const now = Date.now()
+    if (this.last < now) {
+      this.cache.clear()
+    }
+    this.last = now + 5e3
     const key = '__rc:' + this._inc().toString(36)
-    const ref = {}
-    this.map.set(key, ref)
-    this.cache.set(ref, value)
+    this.cache.set(key, value)
     return key
   }
 
   get(key) {
-    const ref = this.map.get(key)
-    this.map.delete(key)
-    return this.cache.get(ref)
+    const value = this.cache.get(key)
+    this.cache.delete(key)
+    return value
   }
 }
 

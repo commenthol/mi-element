@@ -4,12 +4,13 @@ import {
   html,
   escHtml,
   globalRenderCache,
-  renderAttrs
+  renderAttrs,
+  render
 } from '../src/html.js'
 
 const nap = (ms = 50) => new Promise((resolve) => setTimeout(resolve, ms))
 
-describe('escape', function () {
+describe('html', function () {
   beforeEach(() => {
     globalRenderCache.clear()
   })
@@ -86,7 +87,9 @@ describe('escape', function () {
       '<table><tr><td>&lt;a1&gt;</td><td>&#39;a2&#39;</td></tr><tr><td>&quot;b1&quot;</td><td>&amp;b2</td></tr></table>'
     )
   })
+})
 
+describe('renderAttrs', function () {
   it('shall set boolean property to true', async () => {
     const el = document.createElement('div')
     el.innerHTML = html`<input ?disabled="${true}" />`
@@ -144,7 +147,7 @@ describe('escape', function () {
     assert.equal(el.innerHTML, '<button>Click</button>')
     el.firstChild.dispatchEvent(new Event('click'))
     assert.equal(result, 'hello click')
-    assert.equal(globalRenderCache.map.size, 0)
+    assert.equal(globalRenderCache.size, 0)
   })
 
   it('shall set event listener from handlers', async () => {
@@ -161,7 +164,7 @@ describe('escape', function () {
     assert.equal(el.innerHTML, '<button>Click</button>')
     el.firstChild.dispatchEvent(new Event('click'))
     assert.equal(result, 'hello click')
-    assert.equal(globalRenderCache.map.size, 0)
+    assert.equal(globalRenderCache.size, 0)
   })
 
   it('shall collect refs', async () => {
@@ -173,7 +176,7 @@ describe('escape', function () {
     await nap()
     assert.equal(
       el.innerHTML,
-      '<section>\n      <div>Hello</div>\n    </section>'
+      '<section>\n' + '      <div>Hello</div>\n    </section>'
     )
     assert.equal(
       refs.main.outerHTML,
@@ -216,5 +219,40 @@ describe('escape', function () {
       el.innerHTML,
       '<my-element hidden=""><input ref="inside" ?hidden="false" value="undefined"></my-element>'
     )
+  })
+})
+
+describe('render', function () {
+  it('shall render template and collect refs', async () => {
+    let formData
+    const template = html`
+      <section ref="main">
+        <div ref="content">Login</div>
+        <form
+          @submit=${(ev) => {
+            ev.preventDefault()
+            formData = new FormData(ev.target)
+          }}
+        >
+          <input type="text" name="username" value="me" />
+          <input type="password" name="password" value="foo" />
+          <input type="checkbox" name="remember" ?checked=${false} />
+          <input type="text" ?disabled=${true} value="disabled" />
+          <button ref="submit" type="submit">Submit</button>
+        </form>
+      </section>
+    `
+    document.body.innerHTML = null
+    const refs = render(document.body, template)
+    await nap()
+    refs.submit.click()
+    await nap()
+    assert.equal(
+      document.body.innerHTML.replace(/>[\s]*</gm, '><').trim(),
+      '<section><div>Login</div><form><input type="text" name="username" value="me"><input type="password" name="password" value="foo"><input type="checkbox" name="remember"><input type="text" value="disabled" disabled=""><button type="submit">Submit</button></form></section>'
+    )
+    assert.equal(formData.get('username'), 'me')
+    assert.equal(formData.get('password'), 'foo')
+    assert.equal(formData.get('remember'), null)
   })
 })

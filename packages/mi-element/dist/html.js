@@ -2,21 +2,26 @@ import { toJson } from './utils.js';
 
 const globalRenderCache = new class {
   cnt=0;
-  map=new Map;
-  cache=new WeakMap;
+  cache=new Map;
+  last=0;
+  get size() {
+    return this.cache.size;
+  }
   _inc() {
     return this.cnt = 268435455 & ++this.cnt, this.cnt;
   }
   clear() {
-    this.cnt = 0, this.map.clear();
+    this.cnt = 0, this.cache.clear();
   }
   set(value) {
-    const key = '__rc:' + this._inc().toString(36), ref = {};
-    return this.map.set(key, ref), this.cache.set(ref, value), key;
+    const now = Date.now();
+    this.last < now && this.cache.clear(), this.last = now + 5e3;
+    const key = '__rc:' + this._inc().toString(36);
+    return this.cache.set(key, value), key;
   }
   get(key) {
-    const ref = this.map.get(key);
-    return this.map.delete(key), this.cache.get(ref);
+    const value = this.cache.get(key);
+    return this.cache.delete(key), value;
   }
 };
 
