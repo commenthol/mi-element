@@ -77,6 +77,9 @@ export const escHtml = (string) =>
   // @ts-expect-error
   string instanceof UnsafeHtml ? string : unsafeHtml(esc('' + string))
 
+const OBJECT = 'object'
+const FUNCTION = 'function'
+
 /**
  * escape any value for HTML context; objects and functions are stored in the render cache
  * @param {any} any
@@ -87,7 +90,7 @@ const escValue = (any) => {
     // @ts-expect-error
     return any
   }
-  if (['object', 'function'].includes(typeof any)) {
+  if ([OBJECT, FUNCTION].includes(typeof any)) {
     const key = globalRenderCache.set(any)
     return unsafeHtml(key)
   }
@@ -136,6 +139,9 @@ export function render(node, template, handlers = {}) {
   return refs
 }
 
+const REF = 'ref'
+const REF_Q = '[ref]'
+
 /**
  * Post-processing of rendered nodes to handle special attributes:
  *
@@ -156,6 +162,7 @@ export function render(node, template, handlers = {}) {
  */
 export function renderAttrs(node, handlers = {}, refs = {}) {
   if (node.nodeType === Node.ELEMENT_NODE) {
+    const rmFns = []
     for (let attr of node.attributes) {
       const startsWith = attr.name[0]
       const name = attr.name.slice(1)
@@ -171,7 +178,7 @@ export function renderAttrs(node, handlers = {}, refs = {}) {
       } else if (attr.name === '...') {
         // spread attribute
         const obj = globalRenderCache.get(attr.value)
-        if (obj && typeof obj === 'object') {
+        if (obj && typeof obj === OBJECT) {
           for (const [k, v] of Object.entries(obj)) {
             node[k] = v
           }
@@ -187,25 +194,36 @@ export function renderAttrs(node, handlers = {}, refs = {}) {
         const fn = globalRenderCache.get(handlerName)
         if (fn) {
           node.addEventListener(name, (e) => fn(e))
-        } else if (typeof handlers[handlerName] === 'function') {
+        } else if (typeof handlers[handlerName] === FUNCTION) {
           node.addEventListener(name, (e) => handlers[handlerName](e))
         }
         rm = 1
-      } else if (attr.name === 'ref') {
+      } else if (attr.name === REF) {
         // element reference - remove as well to prevent collection by other processors
         const refName = attr.value
         refs[refName] = node
         rm = 1
       }
       if (rm) {
-        requestAnimationFrame(() => {
-          node.removeAttribute(attr.name)
-        })
+        rmFns.push([node, attr.name])
       }
     }
+    // @ts-expect-error
+    rmFns.forEach(([node, name]) => node.removeAttribute(name))
   }
-  // early abort if no children or custom element
-  if (!node.children?.length || customElements.get(node.localName)) {
+  // early abort if custom element but resolve slotted refs
+  if (customElements.get(node.localName)) {
+    const q = node.querySelectorAll(REF_Q)
+    for (let el of q) {
+      const refName = el.getAttribute(REF)
+      if (refName && !refs[refName]) {
+        refs[refName] = el
+      }
+    }
+    return refs
+  }
+  // early abort if no children
+  if (!node.children?.length) {
     return refs
   }
   for (let child of Array.from(node.children)) {

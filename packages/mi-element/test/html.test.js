@@ -7,6 +7,7 @@ import {
   renderAttrs,
   render
 } from '../src/html.js'
+import { define, MiElement } from '../src/element.js'
 
 const nap = (ms = 50) => new Promise((resolve) => setTimeout(resolve, ms))
 
@@ -202,22 +203,22 @@ describe('renderAttrs', function () {
         this.innerHTML = `<input ref="inside" ?hidden="${false}" value="${this.value}" />`
       }
     }
-    customElements.define('my-element', MyElement)
+    customElements.define('test-inside-element', MyElement)
 
     const el = document.createElement('div')
     document.body.appendChild(el)
-    el.innerHTML = html`<my-element
+    el.innerHTML = html`<test-inside-element
       ?hidden=${true}
       .value=${'test'}
       ref="custom"
-    ></my-element>`
+    ></test-inside-element>`
     const refs = renderAttrs(el)
     await nap()
     // console.log('%j', el.innerHTML)
-    assert.deepEqual(Object.keys(refs), ['custom'])
+    assert.deepEqual(Object.keys(refs), ['custom', 'inside'])
     assert.equal(
       el.innerHTML,
-      '<my-element hidden=""><input ref="inside" ?hidden="false" value="undefined"></my-element>'
+      '<test-inside-element hidden=""><input ref="inside" ?hidden="false" value="undefined"></test-inside-element>'
     )
   })
 })
@@ -244,9 +245,7 @@ describe('render', function () {
     `
     document.body.innerHTML = null
     const refs = render(document.body, template)
-    await nap()
     refs.submit.click()
-    await nap()
     assert.equal(
       document.body.innerHTML.replace(/>[\s]*</gm, '><').trim(),
       '<section><div>Login</div><form><input type="text" name="username" value="me"><input type="password" name="password" value="foo"><input type="checkbox" name="remember"><input type="text" value="disabled" disabled=""><button type="submit">Submit</button></form></section>'
@@ -254,5 +253,47 @@ describe('render', function () {
     assert.equal(formData.get('username'), 'me')
     assert.equal(formData.get('password'), 'foo')
     assert.equal(formData.get('remember'), null)
+  })
+
+  it('shall get refs from nested custom elements', async () => {
+    class TestOpenMode extends MiElement {
+      render() {
+        this.renderRoot.innerHTML = html`
+          <div ref="insideOpen"><slot></slot></div>
+        `
+      }
+    }
+
+    class TestNoMode extends MiElement {
+      static get shadowRootOptions() {
+        return null
+      }
+      render() {
+        this.innerHTML = html` <div ref="insideNo"><slot></slot></div> `
+      }
+    }
+
+    define('test-open-mode', TestOpenMode)
+    define('test-no-mode', TestNoMode)
+
+    const el = document.createElement('div')
+    document.body.appendChild(el)
+
+    const template = html`
+      <test-open-mode ref="open">
+        <div ref="divInsideOpen">Inside Open</div>
+      </test-open-mode>
+      <test-no-mode ref="no">
+        <div ref="divInsideNo">Inside No</div>
+      </test-no-mode>
+    `
+
+    const refs = render(el, template)
+    assert.deepEqual(Object.keys(refs), [
+      'open',
+      'divInsideOpen',
+      'no',
+      'divInsideNo'
+    ])
   })
 })
