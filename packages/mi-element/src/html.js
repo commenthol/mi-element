@@ -63,7 +63,9 @@ const escMap = {
   "'": '&#39;'
 }
 
-const esc = (string) => string.replace(/[&<>"']/g, (tag) => escMap[tag])
+const escRe = /[&<>"']/g
+
+const esc = (string) => string.replace(escRe, (tag) => escMap[tag])
 
 /**
  * escape HTML and prevent double escaping of '&'
@@ -90,7 +92,8 @@ const escValue = (any) => {
     // @ts-expect-error
     return any
   }
-  if ([OBJECT, FUNCTION].includes(typeof any)) {
+  const t = typeof any
+  if (t === OBJECT || t === FUNCTION) {
     const key = globalRenderCache.set(any)
     return unsafeHtml(key)
   }
@@ -120,20 +123,18 @@ export const html = (strings, ...values) =>
 /**
  * render HTML template into given node with support for special attributes
  *
- * @param {Element} node to append rendered content
+ * @param {Element} node to render content
  * @param {string|UnsafeHtml} template HTML template string
  * @param {Record<string, Function>|HTMLElement} [handlers={}] event handlers or HTMLElement for method lookup
  * @returns {Record<string, Element>} references collected
  */
 export function render(node, template, handlers = {}) {
   const refs = {}
-  const div = document.createElement('div')
-  div.innerHTML = template.toString()
-  // don't understand why `for (let child of div.children)` does not work here
-  for (let child of Array.from(div.children)) {
+  node.innerHTML = template.toString()
+  for (let i = 0, l = node.children.length; i < l; i++) {
+    const child = node.children[i]
     // @ts-expect-error
     renderAttrs(child, handlers, refs)
-    node.appendChild(child)
   }
   // @ts-expect-error
   return refs
@@ -162,12 +163,15 @@ const REF_Q = '[ref]'
  */
 export function renderAttrs(node, handlers = {}, refs = {}) {
   if (node.nodeType === Node.ELEMENT_NODE) {
-    const rmFns = []
-    for (let attr of node.attributes) {
-      const startsWith = attr.name[0]
-      const name = attr.name.slice(1)
+    const rmAttrs = []
+    const attrs = node.attributes
+    for (let i = 0, l = attrs.length; i < l; i++) {
+      const attr = attrs[i]
+      const attrName = attr.name
+      const code = attrName.charCodeAt(0)
+      const name = attrName.slice(1)
       let rm = 0
-      if (startsWith === '?') {
+      if (code === 63 /* '?' */) {
         // boolean attributes
         if (toJson(attr.value)) {
           node.setAttribute(name, '')
@@ -184,32 +188,32 @@ export function renderAttrs(node, handlers = {}, refs = {}) {
           }
         }
         rm = 1
-      } else if (startsWith === '.') {
+      } else if (code === 46 /* '.' */) {
         // property binding
         node[name] = globalRenderCache.get(attr.value) ?? attr.value
         rm = 1
-      } else if (startsWith === '@') {
+      } else if (code === 64 /* '@' */) {
         // event listener
         const handlerName = attr.value
         const fn = globalRenderCache.get(handlerName)
         if (fn) {
-          node.addEventListener(name, (e) => fn(e))
+          node.addEventListener(name, fn)
         } else if (typeof handlers[handlerName] === FUNCTION) {
-          node.addEventListener(name, (e) => handlers[handlerName](e))
+          node.addEventListener(name, handlers[handlerName])
         }
         rm = 1
       } else if (attr.name === REF) {
         // element reference - remove as well to prevent collection by other processors
-        const refName = attr.value
-        refs[refName] = node
+        refs[attr.value] = node
         rm = 1
       }
       if (rm) {
-        rmFns.push([node, attr.name])
+        rmAttrs.push(attr.name)
       }
     }
-    // @ts-expect-error
-    rmFns.forEach(([node, name]) => node.removeAttribute(name))
+    for (let i = 0, l = rmAttrs.length; i < l; i++) {
+      node.removeAttribute(rmAttrs[i])
+    }
   }
   // early abort if custom element but resolve slotted refs
   if (customElements.get(node.localName)) {

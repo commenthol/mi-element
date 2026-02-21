@@ -33,9 +33,10 @@ const unsafeHtml = str => new UnsafeHtml(str), escMap = {
   '>': '&gt;',
   '"': '&quot;',
   "'": '&#39;'
-}, esc = string => string.replace(/[&<>"']/g, tag => escMap[tag]), escHtml = string => string instanceof UnsafeHtml ? string : unsafeHtml(esc('' + string)), OBJECT = 'object', FUNCTION = 'function', escValue = any => {
+}, escRe = /[&<>"']/g, esc = string => string.replace(escRe, tag => escMap[tag]), escHtml = string => string instanceof UnsafeHtml ? string : unsafeHtml(esc('' + string)), escValue = any => {
   if (any instanceof UnsafeHtml) return any;
-  if ([ OBJECT, FUNCTION ].includes(typeof any)) {
+  const t = typeof any;
+  if ("object" === t || "function" === t) {
     const key = globalRenderCache.set(any);
     return unsafeHtml(key);
   }
@@ -45,10 +46,9 @@ const unsafeHtml = str => new UnsafeHtml(str), escMap = {
 }, ...values.map(val => Array.isArray(val) ? val.map(escValue).join('') : escValue(val))));
 
 function render(node, template, handlers = {}) {
-  const refs = {}, div = document.createElement('div');
-  div.innerHTML = template.toString();
-  for (let child of Array.from(div.children)) renderAttrs(child, handlers, refs), 
-  node.appendChild(child);
+  const refs = {};
+  node.innerHTML = template.toString();
+  for (let i = 0, l = node.children.length; i < l; i++) renderAttrs(node.children[i], handlers, refs);
   return refs;
 }
 
@@ -56,24 +56,24 @@ const REF = 'ref', REF_Q = '[ref]';
 
 function renderAttrs(node, handlers = {}, refs = {}) {
   if (node.nodeType === Node.ELEMENT_NODE) {
-    const rmFns = [];
-    for (let attr of node.attributes) {
-      const startsWith = attr.name[0], name = attr.name.slice(1);
+    const rmAttrs = [], attrs = node.attributes;
+    for (let i = 0, l = attrs.length; i < l; i++) {
+      const attr = attrs[i], attrName = attr.name, code = attrName.charCodeAt(0), name = attrName.slice(1);
       let rm = 0;
-      if ('?' === startsWith) toJson(attr.value) ? node.setAttribute(name, '') : node.removeAttribute(name), 
+      if (63 === code) toJson(attr.value) ? node.setAttribute(name, '') : node.removeAttribute(name), 
       rm = 1; else if ('...' === attr.name) {
         const obj = globalRenderCache.get(attr.value);
-        if (obj && typeof obj === OBJECT) for (const [k, v] of Object.entries(obj)) node[k] = v;
+        if (obj && "object" == typeof obj) for (const [k, v] of Object.entries(obj)) node[k] = v;
         rm = 1;
-      } else if ('.' === startsWith) node[name] = globalRenderCache.get(attr.value) ?? attr.value, 
-      rm = 1; else if ('@' === startsWith) {
+      } else if (46 === code) node[name] = globalRenderCache.get(attr.value) ?? attr.value, 
+      rm = 1; else if (64 === code) {
         const handlerName = attr.value, fn = globalRenderCache.get(handlerName);
-        fn ? node.addEventListener(name, e => fn(e)) : typeof handlers[handlerName] === FUNCTION && node.addEventListener(name, e => handlers[handlerName](e)), 
+        fn ? node.addEventListener(name, fn) : "function" == typeof handlers[handlerName] && node.addEventListener(name, handlers[handlerName]), 
         rm = 1;
       } else attr.name === REF && (refs[attr.value] = node, rm = 1);
-      rm && rmFns.push([ node, attr.name ]);
+      rm && rmAttrs.push(attr.name);
     }
-    rmFns.forEach(([node, name]) => node.removeAttribute(name));
+    for (let i = 0, l = rmAttrs.length; i < l; i++) node.removeAttribute(rmAttrs[i]);
   }
   if (customElements.get(node.localName)) {
     const q = node.querySelectorAll(REF_Q);

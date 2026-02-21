@@ -51,15 +51,17 @@ class TodoApp extends MiElement {
   update() {
     const { listContainer } = this.refs
     if (!listContainer) return
-    // empty the list
-    listContainer.innerHTML = ''
+    // 1. always build up template first
+    let template = ''
     this._list.forEach((item, index) => {
-      render(listContainer, html`<todo-item
+      template += html`<todo-item
         .text=${item.text} ?checked=${item.checked} .index=${index}
         @on-remove=${this.removeItem}
         @on-toggle=${this.toggleItem}>
-        </todo-item>`)
+        </todo-item>`
     })
+    // 2. then render it in one go to avoid multiple re-rendering of the list container
+    render(listContainer, template)
   }
 
   addItem = (ev) => {

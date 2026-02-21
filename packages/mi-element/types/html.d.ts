@@ -1,7 +1,7 @@
 /**
  * render HTML template into given node with support for special attributes
  *
- * @param {Element} node to append rendered content
+ * @param {Element} node to render content
  * @param {string|UnsafeHtml} template HTML template string
  * @param {Record<string, Function>|HTMLElement} [handlers={}] event handlers or HTMLElement for method lookup
  * @returns {Record<string, Element>} references collected

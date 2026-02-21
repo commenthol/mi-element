@@ -258,18 +258,20 @@ describe('render', function () {
   it('shall get refs from nested custom elements', async () => {
     class TestOpenMode extends MiElement {
       render() {
-        this.renderRoot.innerHTML = html`
-          <div ref="insideOpen"><slot></slot></div>
-        `
+        this.renderRoot.innerHTML = html`<div ref="insideOpen">
+          <slot></slot>
+        </div>`
       }
     }
 
     class TestNoMode extends MiElement {
-      static get shadowRootOptions() {
+      static get shadowRootInit() {
         return null
       }
       render() {
-        this.innerHTML = html` <div ref="insideNo"><slot></slot></div> `
+        this.renderRoot.innerHTML = html`<div ref="insideNo">
+          Inside<slot></slot>
+        </div>`
       }
     }
 
@@ -284,6 +286,7 @@ describe('render', function () {
         <div ref="divInsideOpen">Inside Open</div>
       </test-open-mode>
       <test-no-mode ref="no">
+        <!-- no slot support, so this will not be rendered -->
         <div ref="divInsideNo">Inside No</div>
       </test-no-mode>
     `
@@ -293,7 +296,7 @@ describe('render', function () {
       'open',
       'divInsideOpen',
       'no',
-      'divInsideNo'
+      'insideNo'
     ])
   })
 })
