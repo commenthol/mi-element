@@ -1,6 +1,6 @@
 {
   "name": "mi-element",
-  "version": "0.9.5",
+  "version": "0.9.6-0",
   "description": "Build lightweight reactive micro web-components",
   "keywords": [],
   "homepage": "https://github.com/commenthol/mi-element/tree/main/packages/mi-element#readme",
@@ -59,6 +59,14 @@
       "development": "./src/styling.js",
       "types": "./types/styling.d.ts",
       "default": "./dist/styling.js"
+    },
+    "./bundle": {
+      "types": "./types/index.d.ts",
+      "default": "./dist/bundle.js"
+    },
+    "./bundle.min": {
+      "types": "./types/index.d.ts",
+      "default": "./dist/bundle.min.js"
     }
   },
   "main": "src/index.js",

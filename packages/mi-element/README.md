@@ -5,7 +5,7 @@
 
 > a lightweight alternative to write web components
 
-Only weights 2.5kB minified and gzipped.
+Only weights 3.3kB minified and gzipped.
 
 mi-element provides features to build web applications through
 [Web Components][] like:

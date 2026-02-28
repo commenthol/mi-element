@@ -1,5 +1,5 @@
 import terser from '@rollup/plugin-terser'
-// import { nodeResolve } from '@rollup/plugin-node-resolve'
+import { nodeResolve } from '@rollup/plugin-node-resolve'
 
 const terserOptsDeadCode = {
   compress: {
@@ -32,6 +32,48 @@ const tasks = [
           semicolons: false,
           quote_style: 3
         },
+        ...terserOptsDeadCode
+      })
+    ]
+  },
+  {
+    input: `src/index.js`,
+    output: [
+      {
+        file: `./dist/bundle.js`,
+        format: 'es',
+        sourcemap: false,
+        banner: `/*!\n * SPDX-License-Identifier: MIT\n * mi-element v${process.env.npm_package_version}\n */`
+      }
+    ],
+    plugins: [
+      nodeResolve(),
+      terser({
+        mangle: false,
+        format: {
+          beautify: true,
+          indent_level: 2,
+          semicolons: false,
+          quote_style: 3
+        },
+        ...terserOptsDeadCode
+      })
+    ]
+  },
+  {
+    input: `src/index.js`,
+    output: [
+      {
+        file: `./dist/bundle.min.js`,
+        format: 'es',
+        sourcemap: false,
+        banner: `/*!\n * SPDX-License-Identifier: MIT\n * mi-element v${process.env.npm_package_version}\n */`
+      }
+    ],
+    plugins: [
+      nodeResolve(),
+      terser({
+        mangle: true,
         ...terserOptsDeadCode
       })
     ]
