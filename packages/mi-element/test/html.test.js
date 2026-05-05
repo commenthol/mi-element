@@ -91,7 +91,7 @@ describe('html', function () {
 
   it('shall set an undefined value as empty string', async () => {
     const el = document.createElement('div')
-    el.innerHTML = html`<input value="${undefined}">`
+    el.innerHTML = html`<input value="${undefined}" />`
     assert.equal(el.innerHTML, '<input value="">')
   })
 })
