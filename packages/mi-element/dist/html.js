@@ -40,7 +40,7 @@ const unsafeHtml = str => new UnsafeHtml(str), escMap = {
     const key = globalRenderCache.set(any);
     return unsafeHtml(key);
   }
-  return unsafeHtml(esc('' + any));
+  return unsafeHtml(esc('' + (any ?? '')));
 }, html = (strings, ...values) => unsafeHtml(String.raw({
   raw: strings
 }, ...values.map(val => Array.isArray(val) ? val.map(escValue).join('') : escValue(val))));

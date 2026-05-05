@@ -65,6 +65,10 @@ const escMap = {
 
 const escRe = /[&<>"']/g
 
+/**
+ * @param {string} string
+ * @returns {string}
+ */
 const esc = (string) => string.replace(escRe, (tag) => escMap[tag])
 
 /**
@@ -97,7 +101,7 @@ const escValue = (any) => {
     const key = globalRenderCache.set(any)
     return unsafeHtml(key)
   }
-  return unsafeHtml(esc('' + any))
+  return unsafeHtml(esc('' + (any ?? '')))
 }
 
 /**
@@ -180,7 +184,7 @@ export function renderAttrs(node, handlers = {}, refs = {}) {
         }
         rm = 1
       } else if (attr.name === '...') {
-        // spread attribute
+        // spread properties from object
         const obj = globalRenderCache.get(attr.value)
         if (obj && typeof obj === OBJECT) {
           for (const [k, v] of Object.entries(obj)) {

@@ -88,6 +88,12 @@ describe('html', function () {
       '<table><tr><td>&lt;a1&gt;</td><td>&#39;a2&#39;</td></tr><tr><td>&quot;b1&quot;</td><td>&amp;b2</td></tr></table>'
     )
   })
+
+  it('shall set an undefined value as empty string', async () => {
+    const el = document.createElement('div')
+    el.innerHTML = html`<input value="${undefined}">`
+    assert.equal(el.innerHTML, '<input value="">')
+  })
 })
 
 describe('renderAttrs', function () {
