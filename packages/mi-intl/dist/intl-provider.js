@@ -1,8 +1,10 @@
-import { MiElement, ContextProvider } from 'mi-element';
+import { MiElement, ContextProvider } from 'mi-element'
 
-import { I18n } from './i18n.js';
+import { I18n } from './i18n.js'
 
-const INTL_CONTEXT = 'mi-intl', requestAnimationFrameP = () => new Promise(resolve => requestAnimationFrame(resolve));
+const INTL_CONTEXT = 'mi-intl',
+  requestAnimationFrameP = () =>
+    new Promise((resolve) => requestAnimationFrame(resolve))
 
 class MiIntlProvider extends MiElement {
   static get properties() {
@@ -39,41 +41,45 @@ class MiIntlProvider extends MiElement {
         type: Boolean,
         attribute: !1
       }
-    };
+    }
   }
-  static template='<slot></slot>';
+  static template = '<slot></slot>'
   set options(options) {
-    this.i18n = new I18n(options), this.changeLanguage(options?.lng).catch(console.error);
+    ;((this.i18n = new I18n(options)),
+      this.changeLanguage(options?.lng).catch(console.error))
   }
   _contextValue() {
-    const {lng: lng, getLanguages: getLanguages} = this.i18n ?? {
+    const { lng: lng, getLanguages: getLanguages } = this.i18n ?? {
       lng: '',
       getLanguages: () => []
-    };
+    }
     return {
       t: (label, values) => this.i18n?.t(label, values) ?? '',
       lng: lng,
       getLanguages: getLanguages,
       changeLanguage: this.changeLanguage.bind(this),
       loading: this.loading ?? !1
-    };
+    }
   }
   async changeLanguage(lng) {
-    this.loading = !0, await (this.i18n?.changeLanguage(lng).finally(() => {
-      this.requestUpdate();
-    }));
-    for (let i = 0; i < 2; i++) await requestAnimationFrameP();
-    this.dispatchEvent(new CustomEvent('language-changed', {
-      detail: {
-        lng: lng
-      },
-      bubbles: !0,
-      composed: !0
-    })), this.loading = !1;
+    ;((this.loading = !0),
+      await this.i18n?.changeLanguage(lng).finally(() => {
+        this.requestUpdate()
+      }))
+    for (let i = 0; i < 2; i++) await requestAnimationFrameP()
+    ;(this.dispatchEvent(
+      new CustomEvent('language-changed', {
+        detail: {
+          lng: lng
+        },
+        bubbles: !0,
+        composed: !0
+      })
+    ),
+      (this.loading = !1))
   }
   render() {
-    const {version: version, lng: lng, defaultNs: defaultNs, localesPath: localesPath, useLabel: useLabel, debug: debug, supportedLngs: supportedLngs, ns: ns} = this;
-    this.i18n = new I18n({
+    const {
       version: version,
       lng: lng,
       defaultNs: defaultNs,
@@ -82,12 +88,27 @@ class MiIntlProvider extends MiElement {
       debug: debug,
       supportedLngs: supportedLngs,
       ns: ns
-    }), this.provider = new ContextProvider(this, "mi-intl", this._contextValue()), 
-    this.changeLanguage(this.lng).catch(console.error);
+    } = this
+    ;((this.i18n = new I18n({
+      version: version,
+      lng: lng,
+      defaultNs: defaultNs,
+      localesPath: localesPath,
+      useLabel: useLabel,
+      debug: debug,
+      supportedLngs: supportedLngs,
+      ns: ns
+    })),
+      (this.provider = new ContextProvider(
+        this,
+        'mi-intl',
+        this._contextValue()
+      )),
+      this.changeLanguage(this.lng).catch(console.error))
   }
   update() {
-    this.provider?.set(this._contextValue());
+    this.provider?.set(this._contextValue())
   }
 }
 
-export { INTL_CONTEXT, MiIntlProvider };
+export { INTL_CONTEXT, MiIntlProvider }

@@ -1,6 +1,6 @@
 {
   "name": "mi-html",
-  "version": "0.9.0",
+  "version": "0.9.7",
   "description": "html template literal for building reactive web components",
   "keywords": [
     "signal",
