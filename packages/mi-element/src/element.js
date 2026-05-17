@@ -9,7 +9,42 @@ import { toNumber, toJson } from './utils.js'
  */
 const nameMap = {
   class: 'className',
-  for: 'htmlFor'
+  for: 'htmlFor',
+  // input attributes
+  maxlength: 'maxLength',
+  minlength: 'minLength',
+  readonly: 'readOnly',
+  colorspace: 'colorSpace',
+  // focus
+  tabindex: 'tabIndex',
+  accesskey: 'accessKey',
+  // table
+  rowspan: 'rowSpan',
+  colspan: 'colSpan',
+  cellpadding: 'cellPadding',
+  cellspacing: 'cellSpacing',
+  // editing
+  contenteditable: 'contentEditable',
+  // media / resource
+  crossorigin: 'crossOrigin',
+  referrerpolicy: 'referrerPolicy',
+  usemap: 'useMap',
+  ismap: 'isMap',
+  // form
+  enctype: 'encType',
+  formaction: 'formAction',
+  formenctype: 'formEncType',
+  formmethod: 'formMethod',
+  formnovalidate: 'formNoValidate',
+  formtarget: 'formTarget',
+  novalidate: 'noValidate',
+  // input
+  inputmode: 'inputMode',
+  // time
+  datetime: 'dateTime',
+  // legacy
+  frameborder: 'frameBorder',
+  bgcolor: 'bgColor'
 }
 
 /**

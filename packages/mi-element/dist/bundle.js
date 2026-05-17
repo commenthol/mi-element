@@ -183,7 +183,33 @@ const toJson = any => {
   }
 }, nameMap = {
   class: 'className',
-  for: 'htmlFor'
+  for: 'htmlFor',
+  maxlength: 'maxLength',
+  minlength: 'minLength',
+  readonly: 'readOnly',
+  colorspace: 'colorSpace',
+  tabindex: 'tabIndex',
+  accesskey: 'accessKey',
+  rowspan: 'rowSpan',
+  colspan: 'colSpan',
+  cellpadding: 'cellPadding',
+  cellspacing: 'cellSpacing',
+  contenteditable: 'contentEditable',
+  crossorigin: 'crossOrigin',
+  referrerpolicy: 'referrerPolicy',
+  usemap: 'useMap',
+  ismap: 'isMap',
+  enctype: 'encType',
+  formaction: 'formAction',
+  formenctype: 'formEncType',
+  formmethod: 'formMethod',
+  formnovalidate: 'formNoValidate',
+  formtarget: 'formTarget',
+  novalidate: 'noValidate',
+  inputmode: 'inputMode',
+  datetime: 'dateTime',
+  frameborder: 'frameBorder',
+  bgcolor: 'bgColor'
 };
 
 class MiElement extends HTMLElement {
