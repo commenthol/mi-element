@@ -1,6 +1,6 @@
 {
   "name": "mi-element-workspace",
-  "version": "0.9.7",
+  "version": "0.9.8",
   "private": true,
   "description": "Monorepo for mi-element",
   "homepage": "https://github.com/commenthol/mi-element#readme",
@@ -15,7 +15,8 @@
     "f": "pnpm --filter \"./packages/*\" -r",
     "lint": "pnpm -r run lint",
     "test": "pnpm -r run test",
-    "version": "node scripts/version.js"
+    "version": "node scripts/version.js",
+    "dryrun": "pnpm -r publish --dry-run"
   },
   "engines": {
     "node": ">=20.0.0",

@@ -1,6 +1,6 @@
 /*!
  * SPDX-License-Identifier: MIT
- * mi-element v0.9.7
+ * mi-element v0.9.8
  */
 const context = [];
 
