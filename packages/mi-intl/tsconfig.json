@@ -5,6 +5,8 @@
     "checkJs": true,
     "declaration": true,
     "declarationDir": "types",
+    "rootDir": "./src",
+    "types": ["node"],
     "emitDeclarationOnly": true,
     "module": "nodenext",
     "moduleResolution": "nodenext",
