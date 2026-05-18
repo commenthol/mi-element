@@ -93,7 +93,9 @@ describe('MiElement', () => {
       object: { type: Object },
       function: { attribute: false },
       camelCase: {},
-      kebabCase: {}
+      kebabCase: {},
+      className: { attribute: 'class' },
+      fooBar: { attribute: 'foobar' } // custom attribute name
     }
     const attributeValues = {
       empty: '',
@@ -107,7 +109,9 @@ describe('MiElement', () => {
       object: JSON.stringify({ one: 1, two: '2' }),
       function: () => 1,
       camelCase: 'camel',
-      'kebab-case': 'kebab'
+      'kebab-case': 'kebab',
+      class: 'my-class',
+      foobar: 'wat-man'
     }
 
     let previousAttrs = null
@@ -147,8 +151,10 @@ describe('MiElement', () => {
       assert.deepStrictEqual(observedAttributes.sort(), [
         'array',
         'camel-case',
+        'class',
         'empty',
         'false',
+        'foobar',
         'kebab-case',
         'number',
         'object',
@@ -196,8 +202,10 @@ describe('MiElement', () => {
         array: '1,2,a,b,c',
         camelCase: 'camel',
         camelcase: 'camel', // camelCase becomes camelcase
+        class: 'my-class',
         empty: '',
         false: null,
+        foobar: 'wat-man',
         function: '() => 1',
         'kebab-case': 'kebab',
         number: '1',
@@ -218,9 +226,11 @@ describe('MiElement', () => {
       assert.deepStrictEqual(collectProps, {
         array: ['1', '2', 'a', 'b', 'c'],
         camelCase: undefined,
+        class: undefined,
         'kebab-case': undefined,
         empty: '',
         false: undefined,
+        foobar: undefined,
         function: undefined,
         number: 1,
         object: { one: 1, two: '2' },

@@ -5,49 +5,6 @@ import { refsBySelector } from './refs.js'
 import { toNumber, toJson } from './utils.js'
 
 /**
- * Mapping of attribute names to property names
- */
-const nameMap = {
-  class: 'className',
-  for: 'htmlFor',
-  // input attributes
-  maxlength: 'maxLength',
-  minlength: 'minLength',
-  readonly: 'readOnly',
-  colorspace: 'colorSpace',
-  // focus
-  tabindex: 'tabIndex',
-  accesskey: 'accessKey',
-  // table
-  rowspan: 'rowSpan',
-  colspan: 'colSpan',
-  cellpadding: 'cellPadding',
-  cellspacing: 'cellSpacing',
-  // editing
-  contenteditable: 'contentEditable',
-  // media / resource
-  crossorigin: 'crossOrigin',
-  referrerpolicy: 'referrerPolicy',
-  usemap: 'useMap',
-  ismap: 'isMap',
-  // form
-  enctype: 'encType',
-  formaction: 'formAction',
-  formenctype: 'formEncType',
-  formmethod: 'formMethod',
-  formnovalidate: 'formNoValidate',
-  formtarget: 'formTarget',
-  novalidate: 'noValidate',
-  // input
-  inputmode: 'inputMode',
-  // time
-  datetime: 'dateTime',
-  // legacy
-  frameborder: 'frameBorder',
-  bgcolor: 'bgColor'
-}
-
-/**
  * @typedef {object} HostController controller
  * @property {() => void} hostConnected is called when host element is added to
  * the DOM, usually with connectedCallback()
@@ -96,6 +53,51 @@ export class MiElement extends HTMLElement {
   _props = {}
   /** changed properties */
   #changedProps = {}
+  /**
+   * List of common attribute names to property names
+   * where kebab-case attribute names cannot be directly converted to camelCase property names.
+   * This is necessary because HTML attributes are case-insensitive and are always lowercased by the browser.
+   * For example, the `class` attribute corresponds to the `className` property on HTMLElement.
+   *
+   * className: { attribute: 'class' },
+   * htmlFor: { attribute: 'for' },
+   * // input attributes
+   * maxLength: { attribute: 'maxlength' },
+   * minLength: { attribute: 'minlength' },
+   * readOnly: { attribute: 'readonly' },
+   * colorSpace: { attribute: 'colorspace' },
+   * // focus
+   * tabIndex: { attribute: 'tabindex' },
+   * accessKey: { attribute: 'accesskey' },
+   * // table
+   * rowSpan: { attribute: 'rowspan' },
+   * colSpan: { attribute: 'colspan' },
+   * cellPadding: { attribute: 'cellpadding' },
+   * cellSpacing: { attribute: 'cellspacing' },
+   * // editing
+   * contentEditable: { attribute: 'contenteditable' },
+   * // media / resource
+   * crossOrigin: { attribute: 'crossorigin' },
+   * referrerPolicy: { attribute: 'referrerpolicy' },
+   * useMap: { attribute: 'usemap' },
+   * isMap: { attribute: 'ismap' },
+   * // form
+   * encType: { attribute: 'enctype' },
+   * formAction: { attribute: 'formaction' },
+   * formEncType: { attribute: 'formenctype' },
+   * formMethod: { attribute: 'formmethod' },
+   * formNoValidate: { attribute: 'formnovalidate' },
+   * formTarget: { attribute: 'formtarget' },
+   * noValidate: { attribute: 'novalidate' },
+   * // input
+   * inputMode: { attribute: 'inputmode' },
+   * // time
+   * dateTime: { attribute: 'datetime' },
+   * // legacy
+   * frameBorder: { attribute: 'frameborder' },
+   * bgColor: { attribute: 'bgcolor' }
+   */
+  #attrPropMap = {}
 
   #disposers = new Set()
   #controllers = new Set()
@@ -154,7 +156,10 @@ export class MiElement extends HTMLElement {
     super()
     // @ts-expect-error
     const { createSignal, properties } = this.constructor
-    for (const [name, { initial }] of Object.entries(properties)) {
+    for (const [name, { initial, attribute }] of Object.entries(properties)) {
+      if (typeof attribute === 'string') {
+        this.#attrPropMap[attribute] = name
+      }
       // allow overwrites with setter, getters
       const descriptor = Object.getOwnPropertyDescriptor(
         this.constructor.prototype,
@@ -168,7 +173,7 @@ export class MiElement extends HTMLElement {
           if (descriptor?.get) {
             return descriptor.get.call(this)
           }
-          return createSignal ? this._props[name].value : this._props[name]
+          return this._props[name].value
         },
         set(value) {
           const oldValue = this[name]
@@ -177,7 +182,7 @@ export class MiElement extends HTMLElement {
           } else if (createSignal) {
             this._props[name].value = value
           } else {
-            this._props[name] = value
+            this._props[name] = { value }
           }
           if (oldValue !== this[name]) {
             this.requestUpdate({ [name]: value })
@@ -225,7 +230,7 @@ export class MiElement extends HTMLElement {
    * @param {any} newValue new value
    */
   attributeChangedCallback(name, _oldValue, newValue) {
-    const camelName = nameMap[name] ?? kebabToCamelCase(name)
+    const camelName = this.#attrPropMap[name] ?? kebabToCamelCase(name)
     // @ts-expect-error
     const properties = this.constructor?.properties
     const { type } = properties?.[camelName] ?? {}
@@ -375,7 +380,8 @@ export const define = (tagName, elementClass, options) => {
       elementClass.properties
     )) {
       if (attribute) {
-        observedAttrs.push(camelToKebabCase(name))
+        const attrName = attribute === true ? camelToKebabCase(name) : attribute
+        observedAttrs.push(attrName)
       }
     }
     Object.defineProperty(elementClass, 'observedAttributes', {

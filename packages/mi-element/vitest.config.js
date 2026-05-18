@@ -13,7 +13,7 @@ export default defineConfig({
       provider: playwright(),
       instances: [
         { browser: 'firefox' }, 
-        // { browser: 'chromium' }
+        { browser: 'chromium' }
       ],
     }
   }

@@ -1,6 +1,6 @@
 /*!
  * SPDX-License-Identifier: MIT
- * mi-element v0.9.8
+ * mi-element v0.9.9-2
  */
 const context = [];
 
@@ -181,40 +181,12 @@ const toJson = any => {
   } catch {
     return;
   }
-}, nameMap = {
-  class: 'className',
-  for: 'htmlFor',
-  maxlength: 'maxLength',
-  minlength: 'minLength',
-  readonly: 'readOnly',
-  colorspace: 'colorSpace',
-  tabindex: 'tabIndex',
-  accesskey: 'accessKey',
-  rowspan: 'rowSpan',
-  colspan: 'colSpan',
-  cellpadding: 'cellPadding',
-  cellspacing: 'cellSpacing',
-  contenteditable: 'contentEditable',
-  crossorigin: 'crossOrigin',
-  referrerpolicy: 'referrerPolicy',
-  usemap: 'useMap',
-  ismap: 'isMap',
-  enctype: 'encType',
-  formaction: 'formAction',
-  formenctype: 'formEncType',
-  formmethod: 'formMethod',
-  formnovalidate: 'formNoValidate',
-  formtarget: 'formTarget',
-  novalidate: 'noValidate',
-  inputmode: 'inputMode',
-  datetime: 'dateTime',
-  frameborder: 'frameBorder',
-  bgcolor: 'bgColor'
 };
 
 class MiElement extends HTMLElement {
   _props={};
   #changedProps={};
+  #attrPropMap={};
   #disposers=new Set;
   #controllers=new Set;
   #updateRequested=!1;
@@ -234,16 +206,18 @@ class MiElement extends HTMLElement {
   constructor() {
     super();
     const {createSignal: createSignal, properties: properties} = this.constructor;
-    for (const [name, {initial: initial}] of Object.entries(properties)) {
+    for (const [name, {initial: initial, attribute: attribute}] of Object.entries(properties)) {
+      'string' == typeof attribute && (this.#attrPropMap[attribute] = name);
       const descriptor = Object.getOwnPropertyDescriptor(this.constructor.prototype, name);
       createSignal && (this._props[name] = createSignal()), Object.defineProperty(this, name, {
         get() {
-          return descriptor?.get ? descriptor.get.call(this) : createSignal ? this._props[name].value : this._props[name];
+          return descriptor?.get ? descriptor.get.call(this) : this._props[name].value;
         },
         set(value) {
           const oldValue = this[name];
-          descriptor?.set ? descriptor.set.call(this, value) : createSignal ? this._props[name].value = value : this._props[name] = value, 
-          oldValue !== this[name] && this.requestUpdate({
+          descriptor?.set ? descriptor.set.call(this, value) : createSignal ? this._props[name].value = value : this._props[name] = {
+            value: value
+          }, oldValue !== this[name] && this.requestUpdate({
             [name]: value
           });
         }
@@ -260,7 +234,7 @@ class MiElement extends HTMLElement {
     this.#disposers.forEach(remover => remover()), this.#controllers.forEach(controller => controller.hostDisconnected?.());
   }
   attributeChangedCallback(name, _oldValue, newValue) {
-    const camelName = nameMap[name] ?? kebabToCamelCase(name), properties = this.constructor?.properties, {type: type} = properties?.[camelName] ?? {}, coercedValue = convertType(newValue, type);
+    const camelName = this.#attrPropMap[name] ?? kebabToCamelCase(name), properties = this.constructor?.properties, {type: type} = properties?.[camelName] ?? {}, coercedValue = convertType(newValue, type);
     if (name.startsWith('data-')) {
       const datasetName = kebabToCamelCase(name.substring(5));
       datasetName && (this.dataset[datasetName] = coercedValue);
@@ -315,7 +289,10 @@ const define = (tagName, elementClass, options) => {
   const {usedCssPrefix: usedCssPrefix = "", cssPrefix: cssPrefix = "", styles: styles} = options || {};
   if (elementClass.properties) {
     const observedAttrs = [];
-    for (const [name, {attribute: attribute = !0}] of Object.entries(elementClass.properties)) attribute && observedAttrs.push(camelToKebabCase(name));
+    for (const [name, {attribute: attribute = !0}] of Object.entries(elementClass.properties)) if (attribute) {
+      const attrName = !0 === attribute ? camelToKebabCase(name) : attribute;
+      observedAttrs.push(attrName);
+    }
     Object.defineProperty(elementClass, 'observedAttributes', {
       get: () => observedAttrs
     });
